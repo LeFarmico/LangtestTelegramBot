@@ -16,8 +16,6 @@ class Bot(
     private val botToken: String
 ) : TelegramLongPollingBot() {
 
-    val lock = Object()
-
     val sendQueue: Queue<MessageType> = PriorityBlockingQueue()
     val receiveQueue: Queue<Update> = ConcurrentLinkedQueue()
 
@@ -31,20 +29,6 @@ class Bot(
         log.info("Receive new Update. updateId: ${update?.updateId ?: "Invalid id"}.")
         receiveQueue.add(update)
     }
-
-//    fun addToSendQueue(messageType: MessageType) {
-//        synchronized(lock) {
-//            lock.notify()
-//            sendQueue.add(messageType)
-//        }
-//    }
-//
-//    fun pollFromSendQueue(): MessageType? {
-//        synchronized(lock) {
-//            sendQueue.element()
-//
-//        }
-//    }
 
     fun connect() {
         val telegramBotsApi = TelegramBotsApi(DefaultBotSession::class.java)

@@ -21,10 +21,8 @@ class Main {
         }
 
         CoroutineScope(Dispatchers.Default).launch {
-            msgReceiver.run()
-        }
-        CoroutineScope(Dispatchers.Default).launch {
-            msgSender.run()
+            launch { msgReceiver.run() }
+            launch { msgSender.run() }
         }
     }
 
