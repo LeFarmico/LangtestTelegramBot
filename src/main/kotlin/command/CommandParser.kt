@@ -1,8 +1,8 @@
 package command
 
-class Parser(private val botName: String) {
+class CommandParser {
 
-    fun getParsedCommand(text: String): ParsedCommand {
+    fun toParsedCommand(text: String, botName: String): ParsedCommand {
         val trimText = text.trim()
         val noneCommand = ParsedCommand(Command.None, trimText)
 
@@ -10,7 +10,7 @@ class Parser(private val botName: String) {
         val commandAndText = getDelimitedCommand(trimText)
 
         if (isCommand(commandAndText.first)) {
-            return if (isCommandForBot(commandAndText.first)) {
+            return if (isCommandForBot(commandAndText.first, botName)) {
                 val commandText = cutCommandFromText(commandAndText.first)
                 val command = getCommandFromText(commandText)
 
@@ -36,10 +36,10 @@ class Parser(private val botName: String) {
 
     private fun isCommand(text: String): Boolean = text.startsWith(CMD_PREFIX)
 
-    private fun isCommandForBot(command: String): Boolean {
+    private fun isCommandForBot(command: String, botName: String): Boolean {
         return if (command.contains(DELIMITER_CMD_BOT_NAME)) {
-            val botName = command.substring(command.indexOf(DELIMITER_CMD_BOT_NAME) + 1)
-            botName == this.botName
+            val commandBotName = command.substring(command.indexOf(DELIMITER_CMD_BOT_NAME) + 1)
+            commandBotName == botName
         } else true
     }
 
