@@ -1,10 +1,7 @@
 package bot
 
-import command.Command
-import command.CommandParser
 import entity.MessageType
-import handler.AbstractHandler
-import handler.SystemHandler
+import handler.MessageHandled
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -15,6 +12,8 @@ import org.telegram.telegrambots.meta.TelegramBotsApi
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession
+import utils.getChatId
+import java.lang.NullPointerException
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -23,7 +22,8 @@ class Bot(
     private val botToken: String
 ) : TimedSendLongPollingBot() {
 
-    private val receiveQueue: Queue<Update> = ConcurrentLinkedQueue()
+    private val receiver = MessageReceiver()
+    private val sender = MessageSender(this)
     private val log = LoggerFactory.getLogger(this::class.java)
 
     override fun getBotToken(): String = botToken
@@ -31,8 +31,14 @@ class Bot(
     override fun getBotUsername(): String = botName
 
     override fun onUpdateReceived(update: Update?) {
-        log.info("Receive new Update. updateId: ${update?.updateId ?: "Invalid id"}.")
-        receiveQueue.add(update)
+        CoroutineScope(Dispatchers.IO).launch {
+            log.info("Receive new Update. updateId: ${update?.updateId ?: "Invalid id"}.")
+            try {
+                receiver.add(update!!)
+            } catch (e: NullPointerException) {
+                log.error("[ERROR] receive on null object")
+            }
+        }
     }
 
     suspend fun connect() {
@@ -52,7 +58,8 @@ class Bot(
         }
 
         CoroutineScope(Dispatchers.Default).launch {
-            MessageReceiver().run()
+            launch { receiver.run() }
+            launch { sender.run() }
         }
     }
 
@@ -69,11 +76,13 @@ class Bot(
             MessageType.Empty -> TODO()
             MessageType.Error -> TODO()
             is MessageType.Sticker -> TODO()
+            is MessageType.TimedMsg -> execute(messageRequest.message)
         }
     }
 
     private inner class MessageReceiver {
 
+        private val receiveQueue: Queue<Update> = ConcurrentLinkedQueue()
         private val log = LoggerFactory.getLogger(this::class.java)
 
         suspend fun run() {
@@ -82,7 +91,7 @@ class Bot(
                 var update = receiveQueue.poll()
                 while (update != null) {
                     log.info("New object for analyze in queue: ${update.javaClass.simpleName}")
-                    analyze(update)
+                    handle(update)
                     update = receiveQueue.poll()
                 }
                 try {
@@ -93,33 +102,16 @@ class Bot(
             }
         }
 
-        private fun analyze(update: Update) {
-            log.info("Update receiver: $update")
-            val msg = update.message
-            val parsedCommand = CommandParser().toParsedCommand(msg.text ?: update.callbackQuery.data, botName)
-            val chatId = update.message.chatId ?: update.callbackQuery.message.chatId
-
-            val handler = getHandler(parsedCommand.command)
-            val operationResult = handler.operate(chatId.toString(), parsedCommand, update)
-
-            sendTimed(chatId, operationResult)
+        suspend fun add(update: Update) {
+            receiveQueue.add(update)
         }
 
-        private fun getHandler(command: Command): AbstractHandler {
-            return when (command) {
-                Command.Start -> SystemHandler()
-                Command.Help -> SystemHandler()
-                Command.Id -> SystemHandler()
-                Command.None -> SystemHandler()
-                Command.NotForMe -> SystemHandler()
-
-                Command.BeginTest -> TODO()
-                Command.RightAnswer -> TODO()
-                Command.WrongAnswer -> TODO()
-                Command.WordsInDictionary -> TODO()
-                Command.AddWord -> TODO()
-                Command.TimeToNextTest -> TODO()
-            }
+        private fun handle(update: Update) {
+            log.info("Handle receiver: $update")
+            val chatId = update.getChatId
+            val handler = MessageHandled(update)
+            val messageType = handler.getMessageType()
+            sender.add(chatId, messageType)
         }
     }
 
