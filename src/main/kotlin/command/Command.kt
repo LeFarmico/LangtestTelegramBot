@@ -1,6 +1,6 @@
 package command
 
-sealed class Command {
+sealed interface Command {
 
     companion object {
         fun getCommand(text: String): Command {
@@ -19,15 +19,15 @@ sealed class Command {
         }
     }
 
-    object None : Command()
-    object NotForMe : Command()
-    object Start : Command()
-    object Help : Command()
-    object Id : Command()
-    object BeginTest : Command()
-    object RightAnswer : Command()
-    object WrongAnswer : Command()
-    object WordsInDictionary : Command()
-    object TimeToNextTest : Command()
-    object AddWord : Command()
+    object None : Command
+    object NotForMe : Command
+    object Start : Command
+    object Help : Command
+    object Id : Command
+    object BeginTest : Command
+    object RightAnswer : Command
+    object WrongAnswer : Command
+    object WordsInDictionary : Command
+    object TimeToNextTest : Command
+    object AddWord : Command
 }
