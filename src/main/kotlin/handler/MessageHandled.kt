@@ -7,7 +7,9 @@ import org.slf4j.LoggerFactory
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import res.Params
+import res.SystemMessages
 import utils.getChatId
+import java.lang.IllegalStateException
 
 class MessageHandled(private val update: Update) {
 
@@ -18,51 +20,29 @@ class MessageHandled(private val update: Update) {
     fun getMessageType(): MessageType {
         val parsedCommand = parser.toParsedCommand(update.message.text, botName)
         val chatId = update.getChatId
+        log.info("[START] Trying to get Message type of: ${update.message.text}")
         return when (parsedCommand.command) {
             Command.Help -> MessageType.SendMessage(
-                message(chatId) {
-                    it.enableMarkdown(true)
-                    StringBuilder().apply {
-                        append("*Это вспомогательное сообщение - здесь назодятся всё что я умею.*").append(NEXT_LINE).append(
-                            NEXT_LINE
-                        )
-                        append("[/start](/start) - приветственное сообщение").append(NEXT_LINE)
-                        append("[/help](/help) - узнать все что я умею").append(NEXT_LINE)
-                        append("[/langtest](/langtest) - запуск теста").append(NEXT_LINE)
-                        append("[/timetorepeat](/timetorepeat) - установить время, через которое будет приходить новый тест").append(
-                            NEXT_LINE
-                        )
-                        append("[/wordsintest](/wordsintest) - Установить количество слов в тесте").append(NEXT_LINE)
-                        append("[/addword](/addword) - добавить слово").append(NEXT_LINE)
-                    }.toString()
-                }
+                markdownMessageBuilder(chatId, SystemMessages.helpMsg)
             )
-            Command.Id -> MessageType.SendMessage(message(chatId) { update.message.from.id.toString() })
+            Command.Id -> MessageType.SendMessage(
+                markdownMessageBuilder(chatId, update.message.from.id.toString())
+            )
             Command.Start -> MessageType.TimedMsg(
                 true,
-                message(chatId) {
-                    it.enableMarkdown(true)
-                    StringBuilder().apply {
-                        append("Привет я бот Испонского языка").append(NEXT_LINE)
-                        append("Я создан чтобы помочь изучать его").append(NEXT_LINE)
-                        append("Чтобы узнать что я умею - введи команду [/help](/help)")
-                    }.toString()
-                }
+                markdownMessageBuilder(chatId, SystemMessages.startMsg)
             )
             Command.None -> MessageType.Empty
             Command.NotForMe -> MessageType.Empty
-            else -> MessageType.Error
+            else -> MessageType.Error(IllegalStateException("Can't parse command. Try to check Parser settings."))
         }
     }
 
-    private fun message(chatId: Long, message: (SendMessage) -> String): SendMessage {
+    private fun markdownMessageBuilder(chatId: Long, message: String): SendMessage {
         return SendMessage().apply {
+            enableMarkdown(true)
             setChatId(chatId.toString())
-            text = message(this)
+            text = message
         }
-    }
-
-    companion object {
-        const val NEXT_LINE = "\n"
     }
 }
