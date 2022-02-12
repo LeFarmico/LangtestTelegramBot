@@ -7,8 +7,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 
 class MessageController(private val bot: Bot) : IMessageController {
 
-    private val messageReceiver: MessageReceiver = MessageReceiver(this)
-    private val messageScheduler: MessageScheduler = MessageScheduler(this)
+    override val messageReceiver: IMessageReceiver = MessageReceiver(this)
+    override val messageScheduler: MessageScheduler = MessageScheduler(this)
 
     private val log = LoggerFactory.getLogger(javaClass.simpleName)
 

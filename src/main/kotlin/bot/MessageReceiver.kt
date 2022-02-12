@@ -8,13 +8,13 @@ import utils.getChatId
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class MessageReceiver(private val controller: IMessageController) {
+class MessageReceiver(private val controller: IMessageController) : IMessageReceiver {
 
     private val receiveQueue: Queue<Update> = ConcurrentLinkedQueue()
     private val log = LoggerFactory.getLogger(this::class.java)
     var isRunning = true
 
-    suspend fun start() {
+    override suspend fun start() {
         log.info("[START] Message receiver. Receiver.class: ${javaClass.simpleName}")
         isRunning = true
         while (isRunning) {
@@ -32,13 +32,13 @@ class MessageReceiver(private val controller: IMessageController) {
         }
     }
 
-    fun add(update: Update) {
+    override fun add(update: Update) {
         receiveQueue.add(update)
     }
 
-    fun isReceiverStarted(): Boolean = isRunning
+    override fun isReceiverStarted(): Boolean = isRunning
 
-    fun stop(): Boolean {
+    override fun stop(): Boolean {
         return if (!isRunning) {
             log.info("[WARN] Message receiver already stopped.")
             false

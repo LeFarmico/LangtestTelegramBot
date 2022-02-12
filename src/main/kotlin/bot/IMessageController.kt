@@ -4,6 +4,9 @@ import entity.MessageType
 import org.telegram.telegrambots.meta.api.objects.Update
 
 interface IMessageController {
+
+    val messageReceiver: IMessageReceiver
+    val messageScheduler: IMessageScheduler
     
     suspend fun startReceiver(): Boolean
 

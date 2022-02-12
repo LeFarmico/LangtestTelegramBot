@@ -7,14 +7,14 @@ import res.Params
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class MessageScheduler(private val controller: IMessageController) {
+class MessageScheduler(private val controller: IMessageController) : IMessageScheduler {
 
     private val timedMessageQueue: Queue<Pair<Long, MessageType>> = ConcurrentLinkedQueue()
     private val timerQueue = Timer(true)
     private val log = LoggerFactory.getLogger(this::class.java)
     private var isRunning = true
 
-    suspend fun start() {
+    override suspend fun start() {
         log.info("[START] Message scheduler started. Sender.class: ${javaClass.simpleName}")
         isRunning = true
         while (isRunning) {
@@ -31,13 +31,13 @@ class MessageScheduler(private val controller: IMessageController) {
         }
     }
 
-    fun add(chatId: Long, messageType: MessageType) {
+    override fun add(chatId: Long, messageType: MessageType) {
         timedMessageQueue.add(Pair(chatId, messageType))
     }
 
-    fun isSenderStarted(): Boolean = isRunning
+    override fun isSenderStarted(): Boolean = isRunning
 
-    fun stop(): Boolean {
+    override fun stop(): Boolean {
         return if (!isRunning) {
             log.info("[WARN] Message scheduler already stopped.")
             false
@@ -48,7 +48,7 @@ class MessageScheduler(private val controller: IMessageController) {
         }
     }
 
-    private fun scheduleMessage(chatId: Long, messageType: MessageType) {
+    override fun scheduleMessage(chatId: Long, messageType: MessageType) {
         if (!messageType.notified) {
             permanentMessage(chatId, messageType)
         } else {

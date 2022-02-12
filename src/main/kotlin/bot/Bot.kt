@@ -15,9 +15,9 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession
 class Bot(
     private val botName: String,
     private val botToken: String
-) : TimedSendLongPollingBot() {
+) : TimedSendLongPollingBot(), IBot {
 
-    private val controller: IMessageController = MessageController(this)
+    override val controller: IMessageController = MessageController(this)
     private val log = LoggerFactory.getLogger(this::class.java)
 
     override fun getBotToken(): String = botToken
@@ -35,7 +35,7 @@ class Bot(
         }
     }
 
-    suspend fun connect() {
+    override suspend fun connect() {
         val telegramBotsApi = TelegramBotsApi(DefaultBotSession::class.java)
 
         log.info("[STARTED] Bot connecting")
