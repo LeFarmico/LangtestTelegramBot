@@ -70,7 +70,7 @@ class Bot(
             is MessageType.TimedMsg -> execute(messageRequest.message)
             is MessageType.Sticker -> TODO()
             is MessageType.Error -> log.error("[ERROR] request error.", messageRequest.exception)
-            MessageType.Empty -> { log.info("[INFO] request is not identified: ${messageRequest.javaClass}")}
+            MessageType.Empty -> { log.info("[INFO] request is not identified: ${messageRequest.javaClass}") }
         }
     }
 
