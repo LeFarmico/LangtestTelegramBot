@@ -1,6 +1,6 @@
 package bot
 
-import entity.MessageType
+import entity.CallbackType
 import kotlinx.coroutines.delay
 import org.slf4j.LoggerFactory
 import res.Params
@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 class MessageScheduler(private val controller: IMessageController) : IMessageScheduler {
 
-    private val timedMessageQueue: Queue<Pair<Long, MessageType>> = ConcurrentLinkedQueue()
+    private val timedMessageQueue: Queue<Pair<Long, CallbackType>> = ConcurrentLinkedQueue()
     private val timerQueue = Timer(true)
     private val log = LoggerFactory.getLogger(this::class.java)
     private var isRunning = true
@@ -31,8 +31,8 @@ class MessageScheduler(private val controller: IMessageController) : IMessageSch
         }
     }
 
-    override fun add(chatId: Long, messageType: MessageType) {
-        timedMessageQueue.add(Pair(chatId, messageType))
+    override fun add(chatId: Long, callbackType: CallbackType) {
+        timedMessageQueue.add(Pair(chatId, callbackType))
     }
 
     override fun isSenderStarted(): Boolean = isRunning
@@ -48,23 +48,23 @@ class MessageScheduler(private val controller: IMessageController) : IMessageSch
         }
     }
 
-    override fun scheduleMessage(chatId: Long, messageType: MessageType) {
-        if (!messageType.notified) {
-            permanentMessage(chatId, messageType)
+    override fun scheduleMessage(chatId: Long, callbackType: CallbackType) {
+        if (!callbackType.notified) {
+            permanentMessage(chatId, callbackType)
         } else {
-            log.info("New message postponed: ${messageType.javaClass.simpleName}")
-            timerQueue.schedule(ScheduledMessageTask(chatId, messageType), Params.testTimer)
+            log.info("New message postponed: ${callbackType.javaClass.simpleName}")
+            timerQueue.schedule(ScheduledMessageTask(chatId, callbackType), Params.testTimer)
         }
     }
 
-    private fun permanentMessage(chatId: Long, messageType: MessageType) {
-        log.info("New message for sending: ${messageType.javaClass.simpleName}")
-        controller.send(chatId, messageType)
+    private fun permanentMessage(chatId: Long, callbackType: CallbackType) {
+        log.info("New message for sending: ${callbackType.javaClass.simpleName}")
+        controller.send(chatId, callbackType)
     }
 
-    inner class ScheduledMessageTask(private val chatId: Long, private val messageType: MessageType) : TimerTask() {
+    inner class ScheduledMessageTask(private val chatId: Long, private val callbackType: CallbackType) : TimerTask() {
         override fun run() {
-            permanentMessage(chatId, messageType)
+            permanentMessage(chatId, callbackType)
         }
     }
 

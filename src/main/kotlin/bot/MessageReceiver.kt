@@ -1,6 +1,6 @@
 package bot
 
-import handler.MessageHandled
+import handler.MessageHandler
 import kotlinx.coroutines.delay
 import org.slf4j.LoggerFactory
 import org.telegram.telegrambots.meta.api.objects.Update
@@ -52,7 +52,7 @@ class MessageReceiver(private val controller: IMessageController) : IMessageRece
     private fun handle(update: Update) {
         log.info("Handle receiver: $update")
         val chatId = update.getChatId
-        val handler = MessageHandled(update)
+        val handler = MessageHandler(update)
         val messageType = handler.getMessageType()
         controller.schedule(chatId, messageType)
     }

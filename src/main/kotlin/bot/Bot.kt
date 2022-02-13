@@ -1,6 +1,7 @@
 package bot
 
-import entity.MessageType
+import ability.LangTestAbility
+import entity.CallbackType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -18,6 +19,7 @@ class Bot(
 ) : TimedSendLongPollingBot(), IBot {
 
     override val controller: IMessageController = MessageController(this)
+    private val langTestAbility = LangTestAbility(controller)
     private val log = LoggerFactory.getLogger(this::class.java)
 
     override fun getBotToken(): String = botToken
@@ -58,19 +60,20 @@ class Bot(
     }
 
     override fun sendMessageCallback(chatId: Long?, messageRequest: Any?) {
-        if (messageRequest !is MessageType) {
+        if (messageRequest !is CallbackType) {
             log.error("Execute error. Illegal type of message: ${messageRequest!!.javaClass.simpleName}", IllegalArgumentException())
             return
         }
         when (messageRequest) {
-            is MessageType.SendMessage -> {
+            is CallbackType.SendMessage -> {
                 log.info("Use execute for: ${messageRequest.message.javaClass.simpleName}")
                 execute(messageRequest.message)
             }
-            is MessageType.TimedMsg -> execute(messageRequest.message)
-            is MessageType.Sticker -> TODO()
-            is MessageType.Error -> log.error("[ERROR] request error.", messageRequest.exception)
-            MessageType.Empty -> { log.info("[INFO] request is not identified: ${messageRequest.javaClass}") }
+            is CallbackType.StartTest -> langTestAbility.start(messageRequest.chatId)
+            is CallbackType.TimedMsg -> execute(messageRequest.message)
+            is CallbackType.Error -> log.error("[ERROR] request error.", messageRequest.exception)
+            CallbackType.Empty -> { log.info("[INFO] request is not identified: ${messageRequest.javaClass}") }
+            is CallbackType.Next -> langTestAbility.next()
         }
     }
 

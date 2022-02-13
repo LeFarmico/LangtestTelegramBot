@@ -1,6 +1,6 @@
 package bot
 
-import entity.MessageType
+import entity.CallbackType
 import org.slf4j.LoggerFactory
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
@@ -8,7 +8,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 class MessageController(private val bot: Bot) : IMessageController {
 
     override val messageReceiver: IMessageReceiver = MessageReceiver(this)
-    override val messageScheduler: MessageScheduler = MessageScheduler(this)
+    override val messageScheduler: IMessageScheduler = MessageScheduler(this)
 
     private val log = LoggerFactory.getLogger(javaClass.simpleName)
 
@@ -40,33 +40,27 @@ class MessageController(private val bot: Bot) : IMessageController {
 
     override fun stopScheduler(): Boolean = messageScheduler.stop()
 
-    override fun receive(update: Update): Boolean {
-        return if (isReceiverStarted()) {
+    override fun receive(update: Update) {
+        if (isReceiverStarted()) {
             messageReceiver.add(update)
-            true
         } else {
             log.warn("[WARN] Receiver is not started")
-            false
         }
     }
 
-    override fun schedule(chatId: Long, messageType: MessageType): Boolean {
-        return if (isSchedulerStarted()) {
-            messageScheduler.add(chatId, messageType)
-            true
+    override fun schedule(chatId: Long, callbackType: CallbackType) {
+        if (isSchedulerStarted()) {
+            messageScheduler.add(chatId, callbackType)
         } else {
             log.warn("[WARN] Sender is not started")
-            false
         }
     }
 
-    override fun send(chatId: Long, messageType: MessageType): Boolean {
-        return try {
-            bot.sendTimed(chatId, messageType)
-            true
+    override fun send(chatId: Long, callbackType: CallbackType) {
+        try {
+            bot.sendTimed(chatId, callbackType)
         } catch (e: TelegramApiException) {
             log.error("[ERROR] Can't send message: ", e)
-            false
         }
     }
 }
