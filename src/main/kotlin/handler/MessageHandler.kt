@@ -44,7 +44,7 @@ class MessageHandler(private val update: Update) {
                 true,
                 markdownMessageBuilder(chatId, SystemMessages.startMsg)
             )
-            Command.BeginTest -> CallbackType.StartTest(chatId)
+            Command.BeginTest -> CallbackType.LangTest.Start(chatId)
             Command.None -> CallbackType.Empty
             Command.NotForMe -> CallbackType.Empty
             else -> CallbackType.Error(IllegalStateException("Can't parse command. Try to check Parser settings."))
@@ -53,10 +53,10 @@ class MessageHandler(private val update: Update) {
 
     private fun getCallbackByQuery(queryType: QueryType, chatId: Long): CallbackType {
         return when (queryType) {
-            QueryType.Right -> CallbackType.Next(chatId)
-            QueryType.Finish -> TODO()
-            QueryType.None -> TODO()
-            QueryType.Wrong -> TODO()
+            QueryType.None -> CallbackType.Empty
+            QueryType.LangTestQuery.Finish -> CallbackType.LangTest.Finish(chatId)
+            QueryType.LangTestQuery.Right -> CallbackType.LangTest.Answer(chatId, true)
+            QueryType.LangTestQuery.Wrong -> CallbackType.LangTest.Answer(chatId, false)
         }
     }
 

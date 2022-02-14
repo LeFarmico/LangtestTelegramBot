@@ -1,5 +1,7 @@
 package bot
 
+import ability.AbilityManager
+import ability.IAbilityManager
 import ability.LangTestAbility
 import entity.CallbackType
 import kotlinx.coroutines.CoroutineScope
@@ -19,7 +21,7 @@ class Bot(
 ) : TimedSendLongPollingBot(), IBot {
 
     override val controller: IMessageController = MessageController(this)
-    private val langTestAbility = LangTestAbility(controller)
+    override val abilityManager: IAbilityManager = AbilityManager()
     private val log = LoggerFactory.getLogger(this::class.java)
 
     override fun getBotToken(): String = botToken
@@ -59,21 +61,37 @@ class Bot(
         }
     }
 
-    override fun sendMessageCallback(chatId: Long?, messageRequest: Any?) {
-        if (messageRequest !is CallbackType) {
-            log.error("Execute error. Illegal type of message: ${messageRequest!!.javaClass.simpleName}", IllegalArgumentException())
+    override fun sendMessageCallback(chatId: Long?, request: Any?) {
+        if (request !is CallbackType) {
+            log.error("Execute error. Illegal type of message: ${request!!.javaClass.simpleName}", IllegalArgumentException())
             return
         }
-        when (messageRequest) {
+        when (request) {
             is CallbackType.SendMessage -> {
-                log.info("Use execute for: ${messageRequest.message.javaClass.simpleName}")
-                execute(messageRequest.message)
+                log.info("Use execute for: ${request.message.javaClass.simpleName}")
+                execute(request.message)
             }
-            is CallbackType.StartTest -> langTestAbility.start(messageRequest.chatId)
-            is CallbackType.TimedMsg -> execute(messageRequest.message)
-            is CallbackType.Error -> log.error("[ERROR] request error.", messageRequest.exception)
-            CallbackType.Empty -> { log.info("[INFO] request is not identified: ${messageRequest.javaClass}") }
-            is CallbackType.Next -> langTestAbility.next()
+            is CallbackType.TimedMsg -> {
+                log.info("Use execute for timed command: ${request.message.javaClass.simpleName}")
+                execute(request.message)
+            }
+            is CallbackType.Error -> log.error("[ERROR] request error.", request.exception)
+            CallbackType.Empty -> { log.info("[INFO] request is not identified: ${request.javaClass}") }
+            is CallbackType.LangTest -> langTestExecute(request)
+        }
+    }
+
+    private fun langTestExecute(request: CallbackType.LangTest) {
+        log.info("Use execute for LangTest command: ${request.javaClass.simpleName}")
+        when (request) {
+            is CallbackType.LangTest.Start -> {
+                abilityManager.addAndStartAbility(
+                    request.chatId,
+                    LangTestAbility(controller, request.chatId)
+                )
+            }
+            is CallbackType.LangTest.Answer -> abilityManager.abilityAction(request.chatId, request.isCorrect)
+            is CallbackType.LangTest.Finish -> abilityManager.finishAbility(request.chatId)
         }
     }
 

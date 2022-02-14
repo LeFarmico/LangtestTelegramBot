@@ -7,7 +7,7 @@ interface IMessageController {
 
     val messageReceiver: IMessageReceiver
     val messageScheduler: IMessageScheduler
-    
+
     suspend fun startReceiver(): Boolean
 
     suspend fun startScheduler(): Boolean
