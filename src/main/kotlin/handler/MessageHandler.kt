@@ -3,7 +3,7 @@ package handler
 import command.Command
 import command.CommandParser
 import command.ParsedCommand
-import command.QueryType
+import entity.QueryType
 import entity.CallbackType
 import org.slf4j.LoggerFactory
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage

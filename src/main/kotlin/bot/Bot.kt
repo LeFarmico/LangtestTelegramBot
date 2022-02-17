@@ -41,7 +41,6 @@ class Bot(
 
     override suspend fun connect() {
         val telegramBotsApi = TelegramBotsApi(DefaultBotSession::class.java)
-
         log.info("[STARTED] Bot connecting")
         try {
             telegramBotsApi.registerBot(this)

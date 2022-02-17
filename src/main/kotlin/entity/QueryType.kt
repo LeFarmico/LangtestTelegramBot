@@ -1,4 +1,4 @@
-package command
+package entity
 
 sealed class QueryType {
     
