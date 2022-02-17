@@ -47,10 +47,10 @@ class AbilityManager : IAbilityManager {
         }
     }
 
-    override fun abilityAction(chatId: Long, actionData: Any?) {
+    override fun abilityAction(chatId: Long, any: Any?) {
         try {
             val ability = abilityMap[chatId]!!
-            ability.action(actionData)
+            ability.action(any)
             log.info("[INFO] ${ability.javaClass.simpleName} action for chatId: $chatId")
         } catch (e: NullPointerException) {
             log.error("[ERROR] Ability with chatId: $chatId is not found", e)
