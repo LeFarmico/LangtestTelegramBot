@@ -6,10 +6,9 @@ class CategoryRepositoryImpl : CategoryRepository {
 
     override suspend fun getCategories(): List<Category> {
         return listOf(
-        Category(1, "default"),
-        Category(2, "shop"),
-        Category(3, "travel")
+            Category(1, "default"),
+            Category(2, "shop"),
+            Category(3, "travel")
         )
     }
-
 }

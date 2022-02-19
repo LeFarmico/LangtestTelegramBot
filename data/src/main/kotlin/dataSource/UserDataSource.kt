@@ -6,8 +6,8 @@ class UserDataSource {
     
     private val lock = Any()
     
-    val userList = mutableListOf<User>()
-    var id: Long = 1
+    private val userList = mutableListOf<User>()
+    private var id: Long = 1
 
     fun add(chatId: Long): Long {
         synchronized(lock) {
@@ -66,6 +66,30 @@ class UserDataSource {
             return try {
                 val index = userList.indexOfFirst { it.chatId == chatId }
                 userList[index] = userList[index].copy(breakTimeInMillis = timeInMillis)
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
+    }
+
+    fun setCategoryTimeByChatId(chatId: Long, categoryId: Long): Boolean {
+        synchronized(lock) {
+            return try {
+                val index = userList.indexOfFirst { it.chatId == chatId }
+                userList[index] = userList[index].copy(categoryId = categoryId)
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
+    }
+
+    fun setCategoryTimeById(userId: Long, categoryId: Long): Boolean {
+        synchronized(lock) {
+            return try {
+                val index = userList.indexOfFirst { it.id == userId }
+                userList[index] = userList[index].copy(categoryId = categoryId)
                 true
             } catch (e: Exception) {
                 false

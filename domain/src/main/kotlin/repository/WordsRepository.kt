@@ -1,9 +1,12 @@
 package repository
 
-import entity.TestWordData
+import entity.WordData
 
 interface WordsRepository {
 
-    suspend fun getUnansweredWordsCategoryById(chatId: Long, id: Long): List<TestWordData>
+    suspend fun getUnansweredWordsCategoryByChatId(chatId: Long): List<WordData>
 
+    suspend fun createWordsCategoryByChatId(chatId: Long, categoryId: Long): Boolean
+
+    suspend fun addCorrectAnswer(wordId: Long, chatId: Long): Boolean
 }

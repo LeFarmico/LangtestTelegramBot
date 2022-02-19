@@ -1,6 +1,6 @@
 package entity
 
-data class TestWordData(
+data class WordData(
     val id: Long,
     val word: String,
     val translate: String,

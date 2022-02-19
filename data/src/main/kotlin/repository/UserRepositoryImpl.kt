@@ -3,16 +3,20 @@ package repository
 import dataSource.UserDataSource
 import entity.User
 
-class UserRepositoryImpl : UserRepository {
+class UserRepositoryImpl(
+    private val dataSource: UserDataSource
+) : UserRepository {
 
-    private val dataSource = UserDataSource()
-    
     override suspend fun addUser(chatId: Long): Long {
         return dataSource.add(chatId)
     }
 
-    override suspend fun deleteUser(userId: Long): Boolean {
-        return dataSource.userList.removeIf { it.chatId == userId }
+    override suspend fun deleteUserById(userId: Long): Boolean {
+        return dataSource.deleteById(userId)
+    }
+
+    override suspend fun deleteUserChatId(chatId: Long): Boolean {
+        return dataSource.deleteByChatId(chatId)
     }
 
     override suspend fun getUserByChatId(chatId: Long): User? {
@@ -27,12 +31,12 @@ class UserRepositoryImpl : UserRepository {
         return dataSource.getUsers()
     }
 
-    override suspend fun setCategoryForUserById(userId: Long, categoryId: Long) {
-
+    override suspend fun setCategoryForUserById(userId: Long, categoryId: Long): Boolean {
+        return dataSource.setCategoryTimeById(userId, categoryId)
     }
 
-    override suspend fun setCategoryForUserByChatId(chatId: Long, categoryId: Long) {
-        TODO("Not yet implemented")
+    override suspend fun setCategoryForUserByChatId(chatId: Long, categoryId: Long): Boolean {
+        return dataSource.setCategoryTimeByChatId(chatId, categoryId)
     }
 
     override suspend fun setBreakTimeById(userId: Long, timeInMillis: Long) {
@@ -42,5 +46,4 @@ class UserRepositoryImpl : UserRepository {
     override suspend fun setBreakTimeByChatId(chatId: Long, timeInMillis: Long) {
         dataSource.setBreakTimeByChatId(chatId, timeInMillis)
     }
-
 }
