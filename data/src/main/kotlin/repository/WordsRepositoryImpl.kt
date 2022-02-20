@@ -9,9 +9,9 @@ class WordsRepositoryImpl(
     private val userDataSource: UserDataSource
 ) : WordsRepository {
     
-    override suspend fun getUnansweredWordsCategoryByChatId(chatId: Long): List<WordData> {
+    override suspend fun getUnansweredWordsCategoryByChatId(chatId: Long): List<WordData>? {
         return when (val wordsInTest = userDataSource.getUserByChatId(chatId)?.wordsInTest) {
-            null -> wordsDataSource.getUnansweredWords(chatId)
+            null -> null
             else -> wordsDataSource.getUnansweredWords(chatId).shuffled().take(wordsInTest)
         }
     }

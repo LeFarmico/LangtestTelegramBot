@@ -1,16 +1,16 @@
 package bot
 
-import entity.CallbackType
+import entity.SendType
 
 interface IMessageScheduler {
 
     suspend fun start()
 
-    fun add(chatId: Long, callbackType: CallbackType)
+    fun add(chatId: Long, callbackType: SendType)
 
     fun isSenderStarted(): Boolean
 
     fun stop(): Boolean
 
-    fun scheduleMessage(chatId: Long, callbackType: CallbackType)
+    fun scheduleMessage(chatId: Long, callbackType: SendType)
 }

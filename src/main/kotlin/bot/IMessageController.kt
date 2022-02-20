@@ -1,6 +1,6 @@
 package bot
 
-import entity.CallbackType
+import entity.SendType
 import org.telegram.telegrambots.meta.api.objects.Update
 
 interface IMessageController {
@@ -22,7 +22,7 @@ interface IMessageController {
 
     fun receive(update: Update)
 
-    fun schedule(chatId: Long, callbackType: CallbackType)
+    fun schedule(chatId: Long, sendType: SendType)
 
-    fun send(chatId: Long, callbackType: CallbackType)
+    fun send(chatId: Long, sendType: SendType)
 }

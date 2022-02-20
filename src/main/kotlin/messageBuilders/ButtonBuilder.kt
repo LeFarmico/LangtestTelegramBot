@@ -15,7 +15,7 @@ class ButtonBuilder private constructor(private val buttonList: List<InlineKeybo
         return ButtonBuilder(newButtonList)
     }
 
-    fun build(isVertical: Boolean = true, shuffled: Boolean = false): InlineKeyboardMarkup {
+    fun build(isVertical: Boolean = false, shuffled: Boolean = false): InlineKeyboardMarkup {
         val buttons = if (shuffled) { buttonList.shuffled() } else { buttonList }
         return when (isVertical) {
             true -> {

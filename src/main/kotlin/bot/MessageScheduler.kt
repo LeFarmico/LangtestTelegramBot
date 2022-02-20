@@ -1,6 +1,6 @@
 package bot
 
-import entity.CallbackType
+import entity.SendType
 import kotlinx.coroutines.delay
 import org.slf4j.LoggerFactory
 import res.Params
@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 class MessageScheduler(private val controller: IMessageController) : IMessageScheduler {
 
-    private val timedMessageQueue: Queue<Pair<Long, CallbackType>> = ConcurrentLinkedQueue()
+    private val timedMessageQueue: Queue<Pair<Long, SendType>> = ConcurrentLinkedQueue()
     private val timerQueue = Timer(true)
     private val log = LoggerFactory.getLogger(this::class.java)
     private var isRunning = true
@@ -31,7 +31,7 @@ class MessageScheduler(private val controller: IMessageController) : IMessageSch
         }
     }
 
-    override fun add(chatId: Long, callbackType: CallbackType) {
+    override fun add(chatId: Long, callbackType: SendType) {
         timedMessageQueue.add(Pair(chatId, callbackType))
     }
 
@@ -48,7 +48,7 @@ class MessageScheduler(private val controller: IMessageController) : IMessageSch
         }
     }
 
-    override fun scheduleMessage(chatId: Long, callbackType: CallbackType) {
+    override fun scheduleMessage(chatId: Long, callbackType: SendType) {
         if (!callbackType.notified) {
             permanentMessage(chatId, callbackType)
         } else {
@@ -57,12 +57,12 @@ class MessageScheduler(private val controller: IMessageController) : IMessageSch
         }
     }
 
-    private fun permanentMessage(chatId: Long, callbackType: CallbackType) {
+    private fun permanentMessage(chatId: Long, callbackType: SendType) {
         log.info("New message for sending: ${callbackType.javaClass.simpleName}")
         controller.send(chatId, callbackType)
     }
 
-    inner class ScheduledMessageTask(private val chatId: Long, private val callbackType: CallbackType) : TimerTask() {
+    inner class ScheduledMessageTask(private val chatId: Long, private val callbackType: SendType) : TimerTask() {
         override fun run() {
             permanentMessage(chatId, callbackType)
         }
