@@ -14,4 +14,25 @@ object SystemMessages {
     const val startMsg = "Привет я бот Испонского языка \n" +
         "Я создан чтобы помочь изучать его \n" + 
         "Чтобы узнать что я умею - введи команду [/help](/help) \n"
+
+    const val rightAnswer = "Верный ответ"
+    const val wrongAnswer = "Неверный ответ"
+
+    fun nextTestNotifyMessage(timeInMillis: Long): String {
+        val min = timeInMillis / 1000 / 60
+        return when {
+            min < 1 -> {
+                "Следующий тест начнется менее чем через минуту"
+            }
+            min == 1L -> {
+                "Следующий тест начнется через минуту"
+            }
+            min in 2..4 -> {
+                "Следующий тест начнется через $min минуты"
+            }
+            else -> {
+                "Следующий тест начнется через $min минут"
+            }
+        }
+    }
 }

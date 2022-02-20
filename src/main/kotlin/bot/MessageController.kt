@@ -1,6 +1,6 @@
 package bot
 
-import entity.CallbackType
+import entity.SendType
 import org.slf4j.LoggerFactory
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
@@ -48,17 +48,17 @@ class MessageController(private val bot: Bot) : IMessageController {
         }
     }
 
-    override fun schedule(chatId: Long, callbackType: CallbackType) {
+    override fun schedule(chatId: Long, sendType: SendType) {
         if (isSchedulerStarted()) {
-            messageScheduler.add(chatId, callbackType)
+            messageScheduler.add(chatId, sendType)
         } else {
             log.warn("[WARN] Sender is not started")
         }
     }
 
-    override fun send(chatId: Long, callbackType: CallbackType) {
+    override fun send(chatId: Long, sendType: SendType) {
         try {
-            bot.sendTimed(chatId, callbackType)
+            bot.sendTimed(chatId, sendType)
         } catch (e: TelegramApiException) {
             log.error("[ERROR] Can't send message: ", e)
         }

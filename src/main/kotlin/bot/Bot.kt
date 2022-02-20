@@ -2,8 +2,8 @@ package bot
 
 import ability.AbilityManager
 import ability.IAbilityManager
-import ability.LangTestAbility
-import entity.CallbackType
+import ability.langTestAbility.LangTestAbility
+import entity.SendType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -61,36 +61,37 @@ class Bot(
     }
 
     override fun sendMessageCallback(chatId: Long?, request: Any?) {
-        if (request !is CallbackType) {
+        if (request !is SendType) {
             log.error("Execute error. Illegal type of message: ${request!!.javaClass.simpleName}", IllegalArgumentException())
             return
         }
         when (request) {
-            is CallbackType.SendMessage -> {
+            is SendType.SendMessage -> {
                 log.info("Use execute for: ${request.message.javaClass.simpleName}")
                 execute(request.message)
             }
-            is CallbackType.TimedMsg -> {
+            is SendType.TimedMsg -> {
                 log.info("Use execute for timed command: ${request.message.javaClass.simpleName}")
                 execute(request.message)
             }
-            is CallbackType.Error -> log.error("[ERROR] request error.", request.exception)
-            CallbackType.Empty -> { log.info("[INFO] request is not identified: ${request.javaClass}") }
-            is CallbackType.LangTest -> langTestExecute(request)
+            is SendType.Error -> log.error("[ERROR] request error.", request.exception)
+            SendType.Empty -> { log.info("[INFO] request is not identified: ${request.javaClass}") }
+            is SendType.LangTest -> langTestExecute(request)
+            is SendType.EditMessage -> execute(request.message)
         }
     }
 
-    private fun langTestExecute(request: CallbackType.LangTest) {
+    private fun langTestExecute(request: SendType.LangTest) {
         log.info("Use execute for LangTest command: ${request.javaClass.simpleName}")
         when (request) {
-            is CallbackType.LangTest.Start -> {
+            is SendType.LangTest.Start -> {
                 abilityManager.addAndStartAbility(
                     request.chatId,
                     LangTestAbility(controller, request.chatId)
                 )
             }
-            is CallbackType.LangTest.Answer -> abilityManager.abilityAction(request.chatId, request.isCorrect)
-            is CallbackType.LangTest.Finish -> abilityManager.finishAbility(request.chatId)
+            is SendType.LangTest.Answer -> abilityManager.abilityAction(request.chatId, request.testAnswerData)
+            is SendType.LangTest.Finish -> abilityManager.finishAbility(request.chatId)
         }
     }
 
