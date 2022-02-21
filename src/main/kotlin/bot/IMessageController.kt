@@ -1,12 +1,12 @@
 package bot
 
-import entity.SendType
+import entity.SendData
 import org.telegram.telegrambots.meta.api.objects.Update
 
 interface IMessageController {
 
     val messageReceiver: IMessageReceiver
-    val messageScheduler: IMessageScheduler
+    val messageScheduler: IMessageSender
 
     suspend fun startReceiver(): Boolean
 
@@ -22,7 +22,7 @@ interface IMessageController {
 
     fun receive(update: Update)
 
-    fun schedule(chatId: Long, sendType: SendType)
+    fun schedule(chatId: Long, sendData: SendData)
 
-    fun send(chatId: Long, sendType: SendType)
+    fun send(chatId: Long, sendData: SendData)
 }

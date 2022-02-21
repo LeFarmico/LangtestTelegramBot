@@ -1,6 +1,6 @@
 package bot
 
-import entity.SendType
+import entity.SendData
 import org.slf4j.LoggerFactory
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
@@ -8,7 +8,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 class MessageController(private val bot: Bot) : IMessageController {
 
     override val messageReceiver: IMessageReceiver = MessageReceiver(this)
-    override val messageScheduler: IMessageScheduler = MessageScheduler(this)
+    val messageSender: IMessageSender = MessageSender(this)
 
     private val log = LoggerFactory.getLogger(javaClass.simpleName)
 
@@ -24,7 +24,7 @@ class MessageController(private val bot: Bot) : IMessageController {
 
     override suspend fun startScheduler(): Boolean {
         return try {
-            messageScheduler.start()
+            messageSender.start()
             true
         } catch (e: InterruptedException) {
             log.error("[ERROR] Message sender thread was interrupted. Failure: ", e)
@@ -34,11 +34,11 @@ class MessageController(private val bot: Bot) : IMessageController {
 
     override fun isReceiverStarted(): Boolean = messageReceiver.isReceiverStarted()
 
-    override fun isSchedulerStarted(): Boolean = messageScheduler.isSenderStarted()
+    override fun isSchedulerStarted(): Boolean = messageSender.isSenderStarted()
 
     override fun stopReceiver(): Boolean = messageReceiver.stop()
 
-    override fun stopScheduler(): Boolean = messageScheduler.stop()
+    override fun stopScheduler(): Boolean = messageSender.stop()
 
     override fun receive(update: Update) {
         if (isReceiverStarted()) {
@@ -48,17 +48,17 @@ class MessageController(private val bot: Bot) : IMessageController {
         }
     }
 
-    override fun schedule(chatId: Long, sendType: SendType) {
+    override fun schedule(chatId: Long, sendData: SendData) {
         if (isSchedulerStarted()) {
-            messageScheduler.add(chatId, sendType)
+            messageSender.add(chatId, sendData)
         } else {
             log.warn("[WARN] Sender is not started")
         }
     }
 
-    override fun send(chatId: Long, sendType: SendType) {
+    override fun send(chatId: Long, sendData: SendData) {
         try {
-            bot.sendTimed(chatId, sendType)
+            bot.sendTimed(chatId, sendData)
         } catch (e: TelegramApiException) {
             log.error("[ERROR] Can't send message: ", e)
         }

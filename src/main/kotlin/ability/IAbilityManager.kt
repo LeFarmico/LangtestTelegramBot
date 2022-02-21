@@ -1,8 +1,6 @@
 package ability
 
 interface IAbilityManager {
-    
-    val abilityMap: MutableMap<Long, AbstractAbility>
 
     fun addAbility(chatId: Long, ability: AbstractAbility)
 
@@ -13,4 +11,6 @@ interface IAbilityManager {
     fun finishAbility(chatId: Long)
 
     fun abilityAction(chatId: Long, any: Any? = null)
+
+
 }

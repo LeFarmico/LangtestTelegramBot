@@ -4,7 +4,7 @@ import entity.User
 
 interface UserRepository {
     
-    suspend fun addUser(chatId: Long): Long
+    suspend fun addUser(chatId: Long, languageId: Long): Long
     
     suspend fun deleteUserById(userId: Long): Boolean
 

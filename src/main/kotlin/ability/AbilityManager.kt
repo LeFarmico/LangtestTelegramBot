@@ -1,11 +1,12 @@
 package ability
 
+import bot.Bot
 import org.slf4j.LoggerFactory
 
-class AbilityManager : IAbilityManager {
+class AbilityManager(private val bot: Bot) : IAbilityManager {
     
     private val log = LoggerFactory.getLogger(javaClass.simpleName)
-    override val abilityMap: MutableMap<Long, AbstractAbility> = mutableMapOf()
+    private val abilityMap: MutableMap<Long, AbstractAbility> = mutableMapOf()
     
     override fun addAbility(chatId: Long, ability: AbstractAbility) {
         if (abilityMap[chatId] == null) {

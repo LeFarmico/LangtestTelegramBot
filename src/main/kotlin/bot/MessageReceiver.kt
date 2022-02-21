@@ -1,14 +1,16 @@
 package bot
 
+import callback.ICallbackManager
+import command.ICommandManager
+import handler.CallbackHandler
 import handler.MessageHandler
 import kotlinx.coroutines.delay
 import org.slf4j.LoggerFactory
 import org.telegram.telegrambots.meta.api.objects.Update
-import utils.getChatId
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class MessageReceiver(private val controller: IMessageController) : IMessageReceiver {
+class MessageReceiver(private val commandManager: ICommandManager, private val callbackManager: ICallbackManager) : IMessageReceiver {
 
     private val receiveQueue: Queue<Update> = ConcurrentLinkedQueue()
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -21,7 +23,7 @@ class MessageReceiver(private val controller: IMessageController) : IMessageRece
             var update = receiveQueue.poll()
             while (update != null) {
                 log.info("New object for analyze in queue: ${update.javaClass.simpleName}")
-                handle(update)
+                receive(update)
                 update = receiveQueue.poll()
             }
             try {
@@ -49,11 +51,21 @@ class MessageReceiver(private val controller: IMessageController) : IMessageRece
         }
     }
 
-    private fun handle(update: Update) {
+    private fun receive(update: Update) {
         log.info("Handle receiver: $update")
-        val chatId = update.getChatId
-        val handler = MessageHandler(update)
-        val messageType = handler.getMessageType()
-        controller.schedule(chatId, messageType)
+        if (checkForCallback(update)) {
+            CallbackHandler(update).handle {
+                callbackManager.callbackAction(it)
+            }
+        } else {
+            MessageHandler(update).handle {
+                // TODO handle result
+            }
+        }
+//        controller.schedule(chatId, messageType)
+    }
+
+    private fun checkForCallback(update: Update): Boolean {
+        return update.callbackQuery != null
     }
 }

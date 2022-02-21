@@ -3,7 +3,7 @@ package ability.langTestAbility
 import ability.AbilityState
 import ability.AbstractAbility
 import bot.IMessageController
-import entity.SendType
+import entity.SendData
 import entity.User
 import entity.WordData
 import inject.DataInjector
@@ -14,6 +14,7 @@ import messageBuilders.MessageBuilder
 import org.slf4j.LoggerFactory
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
+import repository.LanguageRepository
 import repository.UserRepository
 import repository.WordsRepository
 import res.SystemMessages
@@ -33,13 +34,14 @@ class LangTestAbility(
     
     private val userRepo: UserRepository = DataInjector.userRepo
     private val wordsRepository: WordsRepository = DataInjector.wordsRepo
+    lateinit var languageRepository: LanguageRepository
     
     private var user: User? = null
 
     override fun start() {
         CoroutineScope(Dispatchers.IO).launch {
             if (abilityState != AbilityState.STARTED) {
-                userRepo.addUser(chatId)
+                userRepo.addUser(chatId, 1)
                 user = userRepo.getUserByChatId(chatId)!!
                 wordsRepository.createWordsCategoryByChatId(chatId, user!!.categoryId)
                 val wordsList = wordsRepository.getUnansweredWordsCategoryByChatId(chatId)
@@ -78,7 +80,7 @@ class LangTestAbility(
         }
         CoroutineScope(Dispatchers.Default).launch {
             if (checkForQuestions()) {
-                sendMessage(chatId, getNext()!!.sendType)
+                sendMessage(chatId, getNext()!!.sendData)
             } else {
                 if (checkForExam()) {
                     askForExam(chatId)
@@ -99,10 +101,10 @@ class LangTestAbility(
             .chatAndMessageId(chatId, messageId)
             .newMessage(message)
             .build()
-        messageController.schedule(chatId, SendType.EditMessage(editMessage))
+        messageController.schedule(chatId, SendData.EditMessage(editMessage))
     }
 
-    private fun sendMessage(chatId: Long, type: SendType) {
+    private fun sendMessage(chatId: Long, type: SendData) {
         messageController.schedule(chatId, type)
     }
     
@@ -132,25 +134,39 @@ class LangTestAbility(
         testQueue.add(testQuestionData)
     }
 
+    private suspend fun askForLanguage(chatId: Long) {
+        val langList = languageRepository.getAvailableLanguages()
+        val askMessage = MessageBuilder.setChatId(chatId)
+            .setText(SystemMessages.chooseLanguage)
+            .setButtons {
+                var builder = ButtonBuilder.setUp()
+                for (i in langList.indices) {
+                    builder = builder.addButton(langList[i].languageName, "langtestlangId-${langList[i].id}")
+                }
+                builder.build()
+            }
+    }
+
     private fun askForExam(chatId: Long) {
         val askMessage = MessageBuilder.setChatId(chatId)
-            .setText("Вы ответили на все вопросы. Хотите начать экзамен?")
+            .setText(SystemMessages.askForExam)
             .setButtons {
-                ButtonBuilder.createFirstButton("Да", "langtestexamyes")
-                    .addButton("Нет", "langtestexamno")
+                ButtonBuilder.setUp()
+                    .addButton(SystemMessages.yes, EXAM_YES)
+                    .addButton(SystemMessages.no, EXAM_NO)
                     .build()
             }.build()
-        messageController.schedule(chatId, SendType.SendMessage(askMessage))
+        messageController.schedule(chatId, SendData.SendMessage(askMessage))
     }
 
     private fun scheduleNextTest() {
         try {
-            val notifyMessage = SendType.SendMessage(
+            val notifySendData = SendData.SendMessage(
                 MessageBuilder.setChatId(chatId)
                     .setText(SystemMessages.nextTestNotifyMessage(user!!.breakTimeInMillis))
                     .build()
             )
-            messageController.schedule(chatId, notifyMessage)
+            messageController.schedule(chatId, notifySendData)
             timer.schedule(ScheduleExam(user), user!!.breakTimeInMillis)
             log.info("Next test scheduled for $chatId")
         } catch (e: NullPointerException) {
@@ -171,7 +187,7 @@ class LangTestAbility(
                         .map { it.translate }
                         .filter { it != wordData.translate }
                 )
-                val sendType = SendType.SendMessage(message)
+                val sendType = SendData.SendMessage(message)
                 testQueue.add(TestQuestionData(chatId, sendType, wordId))
             }
         } catch (e: NullPointerException) {
@@ -192,7 +208,8 @@ class LangTestAbility(
     }
 
     private fun createAnswerButtonList(correctAnswer: String, wrongAnswers: List<String>): InlineKeyboardMarkup {
-        var buttonBuilder = ButtonBuilder.createFirstButton(correctAnswer, RIGHT_ANSWER)
+        var buttonBuilder = ButtonBuilder.setUp()
+            .addButton(correctAnswer, RIGHT_ANSWER)
         val answers = wrongAnswers.shuffled().take(2)
 
         for (i in answers.indices) {
@@ -217,5 +234,7 @@ class LangTestAbility(
         const val RIGHT_ANSWER = "langtestright"
         const val WRONG_ANSWER = "langtestwrong"
         const val FINISH = "langtestfinish"
+        const val EXAM_YES = "langtestexamyes"
+        const val EXAM_NO = "langtestexamno"
     }
 }
