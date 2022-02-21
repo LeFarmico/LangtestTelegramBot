@@ -6,7 +6,7 @@ sealed class AbilityActionType {
     
     companion object {
         fun getQueryType(queryText: String): AbilityActionType {
-            return when (queryText.trim().lowercase()) {
+            return when (val text = queryText.trim().lowercase()) {
                 LangTestAbility.RIGHT_ANSWER -> LangTestQuery.Right
                 LangTestAbility.WRONG_ANSWER -> LangTestQuery.Wrong
                 LangTestAbility.FINISH -> LangTestQuery.Finish

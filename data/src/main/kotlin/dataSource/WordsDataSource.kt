@@ -6,18 +6,18 @@ class WordsDataSource {
 
     private val lock = Any()
     private val words = mutableListOf<WordData>(
-        WordData(1, "Wolf", "Волк", 1),
-        WordData(2, "Rabbit", "Кролик", 1),
-        WordData(3, "Deer", "Олень", 1),
-        WordData(4, "Monkey", "Обезьяна", 1),
-        WordData(5, "Snake", "Змея", 1),
-        WordData(6, "Dog", "Собака", 1),
-        WordData(7, "Cat", "Кошка", 1),
-        WordData(8, "Fish", "Рыба", 1),
-        WordData(9, "Duck", "Утка", 1),
-        WordData(10, "Horse", "Лошадь", 1),
-        WordData(11, "Eagle", "Орел", 1),
-        WordData(12, "Fox", "Лиса", 1),
+        WordData(1, "Wolf", "Волк", 1, 1),
+        WordData(2, "Rabbit", "Кролик", 1, 1),
+        WordData(3, "Deer", "Олень", 1, 1),
+        WordData(4, "Monkey", "Обезьяна", 1, 1),
+        WordData(5, "Snake", "Змея", 1, 1),
+        WordData(6, "Dog", "Собака", 1, 1),
+        WordData(7, "Cat", "Кошка", 1, 1),
+        WordData(8, "Fish", "Рыба", 1, 1),
+        WordData(9, "Duck", "Утка", 1, 1),
+        WordData(10, "Horse", "Лошадь", 1, 1),
+        WordData(11, "Eagle", "Орел", 1, 1),
+        WordData(12, "Fox", "Лиса", 1, 1),
     )
 
     private val wordsForUserMap: MutableMap<Long, List<WordData>> = mutableMapOf()

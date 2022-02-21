@@ -29,13 +29,8 @@ class ButtonBuilder private constructor(private val buttonList: List<InlineKeybo
     }
 
     companion object {
-        fun createFirstButton(text: String, callback: String): ButtonBuilder {
-            val button = InlineKeyboardButton().apply {
-                this.text = text
-                this.callbackData = callback
-            }
-            val newButtonList = mutableListOf<InlineKeyboardButton>(button)
-            return ButtonBuilder(newButtonList)
+        fun setUp(): ButtonBuilder {
+            return ButtonBuilder(listOf())
         }
     }
 }

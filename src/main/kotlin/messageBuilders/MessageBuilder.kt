@@ -23,6 +23,11 @@ class MessageBuilder(private val chatId: Long) {
         sendMessage.replyMarkup = inlineKeyboardMarkup()
         return this
     }
+
+    fun enableMarkdown(enable: Boolean) : MessageBuilder {
+        sendMessage.enableMarkdown(enable)
+        return this
+    }
     
     fun build(): SendMessage = sendMessage
     

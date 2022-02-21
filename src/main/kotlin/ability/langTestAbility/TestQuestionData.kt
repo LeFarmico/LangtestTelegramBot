@@ -1,5 +1,5 @@
 package ability.langTestAbility
 
-import entity.SendType
+import entity.SendData
 
-data class TestQuestionData(val chatId: Long, val sendType: SendType, val wordId: Long)
+data class TestQuestionData(val chatId: Long, val sendData: SendData, val wordId: Long)

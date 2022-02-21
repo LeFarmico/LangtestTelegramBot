@@ -7,8 +7,8 @@ class UserRepositoryImpl(
     private val dataSource: UserDataSource
 ) : UserRepository {
 
-    override suspend fun addUser(chatId: Long): Long {
-        return dataSource.add(chatId)
+    override suspend fun addUser(chatId: Long, languageId: Long): Long {
+        return dataSource.add(chatId, languageId)
     }
 
     override suspend fun deleteUserById(userId: Long): Boolean {

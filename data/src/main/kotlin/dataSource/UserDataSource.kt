@@ -9,9 +9,13 @@ class UserDataSource {
     private val userList = mutableListOf<User>()
     private var id: Long = 1
 
-    fun add(chatId: Long): Long {
+    fun add(chatId: Long, languageId: Long): Long {
         synchronized(lock) {
-            val user = User(id++, chatId)
+            val user = User(
+                id = id++,
+                chatId = chatId,
+                languageId = languageId
+            )
             userList.add(user)
             return user.id
         }

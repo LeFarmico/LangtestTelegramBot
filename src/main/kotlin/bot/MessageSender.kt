@@ -1,15 +1,15 @@
 package bot
 
-import entity.SendType
+import entity.SendData
 import kotlinx.coroutines.delay
 import org.slf4j.LoggerFactory
 import res.Params
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class MessageScheduler(private val controller: IMessageController) : IMessageScheduler {
+class MessageSender(private val controller: IMessageController) : IMessageSender {
 
-    private val timedMessageQueue: Queue<Pair<Long, SendType>> = ConcurrentLinkedQueue()
+    private val timedSendDataQueue: Queue<Pair<Long, SendData>> = ConcurrentLinkedQueue()
     private val timerQueue = Timer(true)
     private val log = LoggerFactory.getLogger(this::class.java)
     private var isRunning = true
@@ -18,10 +18,10 @@ class MessageScheduler(private val controller: IMessageController) : IMessageSch
         log.info("[START] Message scheduler started. Sender.class: ${javaClass.simpleName}")
         isRunning = true
         while (isRunning) {
-            var messageTypePair = timedMessageQueue.poll()
+            var messageTypePair = timedSendDataQueue.poll()
             while (messageTypePair != null) {
                 scheduleMessage(messageTypePair.first, messageTypePair.second)
-                messageTypePair = timedMessageQueue.poll()
+                messageTypePair = timedSendDataQueue.poll()
             }
             try {
                 delay(SLEEP_TIME)
@@ -31,8 +31,8 @@ class MessageScheduler(private val controller: IMessageController) : IMessageSch
         }
     }
 
-    override fun add(chatId: Long, callbackType: SendType) {
-        timedMessageQueue.add(Pair(chatId, callbackType))
+    override fun add(chatId: Long, callbackType: SendData) {
+        timedSendDataQueue.add(Pair(chatId, callbackType))
     }
 
     override fun isSenderStarted(): Boolean = isRunning
@@ -48,7 +48,7 @@ class MessageScheduler(private val controller: IMessageController) : IMessageSch
         }
     }
 
-    override fun scheduleMessage(chatId: Long, callbackType: SendType) {
+    override fun scheduleMessage(chatId: Long, callbackType: SendData) {
         if (!callbackType.notified) {
             permanentMessage(chatId, callbackType)
         } else {
@@ -57,12 +57,12 @@ class MessageScheduler(private val controller: IMessageController) : IMessageSch
         }
     }
 
-    private fun permanentMessage(chatId: Long, callbackType: SendType) {
+    private fun permanentMessage(chatId: Long, callbackType: SendData) {
         log.info("New message for sending: ${callbackType.javaClass.simpleName}")
         controller.send(chatId, callbackType)
     }
 
-    inner class ScheduledMessageTask(private val chatId: Long, private val callbackType: SendType) : TimerTask() {
+    inner class ScheduledMessageTask(private val chatId: Long, private val callbackType: SendData) : TimerTask() {
         override fun run() {
             permanentMessage(chatId, callbackType)
         }

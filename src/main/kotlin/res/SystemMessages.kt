@@ -16,7 +16,18 @@ object SystemMessages {
         "Чтобы узнать что я умею - введи команду [/help](/help) \n"
 
     const val rightAnswer = "Верный ответ"
+
     const val wrongAnswer = "Неверный ответ"
+
+    const val chooseLanguage = "Выберите язык из предложенных"
+
+    const val askForExam = "Вы ответили на все вопросы. Хотите начать экзамен?"
+
+    const val yes = "Да"
+
+    const val no = "Нет"
+
+    const val notRegistered = "Вы не зарегистрированны в системе"
 
     fun nextTestNotifyMessage(timeInMillis: Long): String {
         val min = timeInMillis / 1000 / 60
