@@ -1,8 +1,8 @@
 package handler
 
-import command.CommandParser
-import command.CommandWithInfo
-import command.ParsedCommand
+import command.UpdateParser
+import command.CommandRequestData
+import command.DelimitedCommand
 import org.slf4j.LoggerFactory
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
@@ -12,19 +12,19 @@ import utils.getChatId
 class MessageHandler(private val update: Update) {
 
     private val botName = Params.botName
-    private val parser = CommandParser()
+    private val parser = UpdateParser()
     private val log = LoggerFactory.getLogger(this::class.java)
 
-    fun handle(command: (CommandWithInfo) -> Unit) {
+    fun handle(command: (CommandRequestData) -> Unit) {
         command(getCommandWithInfo())
     }
 
-    private fun getParsedCommand(): ParsedCommand = parser.toParsedCommand(update.message.text, botName)
+    private fun getParsedCommand(): DelimitedCommand = parser.toParsedCommand(update.message.text, botName)
 
-    private fun getCommandWithInfo(): CommandWithInfo {
+    private fun getCommandWithInfo(): CommandRequestData {
         val chatId = update.getChatId
         val messageId = update.message.messageId
-        return CommandWithInfo(chatId, messageId, getParsedCommand())
+        return CommandRequestData(chatId, messageId, getParsedCommand())
     }
     private fun markdownMessageBuilder(chatId: Long, message: String): SendMessage {
         return SendMessage().apply {

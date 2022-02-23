@@ -1,8 +1,10 @@
 package ability.langTestAbility
 
 import ability.AbilityState
-import ability.AbstractAbility
+import ability.IAbility
 import bot.IMessageController
+import bot.MessageSender
+import command.Command
 import entity.SendData
 import entity.User
 import entity.WordData
@@ -23,38 +25,43 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.collections.List
 
 class LangTestAbility(
-    private val messageController: IMessageController,
-    private val chatId: Long
-) : AbstractAbility(chatId) {
+    private val messageSender: MessageSender
+) : IAbility {
 
     private val log = LoggerFactory.getLogger(javaClass.simpleName)
-    
+
+    private val userList = mutableListOf<LangTestUserStatus>()
     private val timer by lazy { Timer(true) }
-    private val testQueue: Queue<TestQuestionData> = ConcurrentLinkedQueue()
-    
+
     private val userRepo: UserRepository = DataInjector.userRepo
     private val wordsRepository: WordsRepository = DataInjector.wordsRepo
     lateinit var languageRepository: LanguageRepository
     
     private var user: User? = null
 
-    override fun start() {
+    override fun subscribe(chatId: Long) {
         CoroutineScope(Dispatchers.IO).launch {
-            if (abilityState != AbilityState.STARTED) {
-                userRepo.addUser(chatId, 1)
-                user = userRepo.getUserByChatId(chatId)!!
-                wordsRepository.createWordsCategoryByChatId(chatId, user!!.categoryId)
-                val wordsList = wordsRepository.getUnansweredWordsCategoryByChatId(chatId)
-                createWordsForTest(wordsList)
-                action()
-            }
-            super.start()
+            userRepo.addUser(chatId, 1)
+            user = userRepo.getUserByChatId(chatId)!!
+            wordsRepository.createWordsCategoryByChatId(chatId, user!!.categoryId)
+            val wordsList = wordsRepository.getUnansweredWordsCategoryByChatId(chatId)
+            createWordsForTest(wordsList)
+            action()
         }
     }
 
-    override fun action(actionData: Any?) {
+    override fun action(data: AbilityCommand?) {
+        when (data?.command) {
+            is Command.Answer -> TODO()
+            Command.BeginTest -> TODO()
+            is Command.Exam -> TODO()
+            is Command.SetCategory -> TODO()
+            is Command.SetLanguage -> TODO()
+            Command.TimeToNextTest -> TODO()
+            else -> {log.warn("[WARN] action not for ${javaClass.simpleName}")}
+        }
         try {
-            val answerData = actionData as TestAnswerData
+            val answerData = data as TestAnswerData
             when (answerData.isCorrect) {
                 true -> {
                     val wordId = testQueue.poll().wordId
@@ -71,7 +78,7 @@ class LangTestAbility(
             when (e) {
                 is NullPointerException -> {}
                 is TypeCastException -> {
-                    log.error("[ERROR] Unexpected type for actionData: ${actionData!!.javaClass.simpleName}", e)
+                    log.error("[ERROR] Unexpected type for actionData: ${data!!.javaClass.simpleName}", e)
                 }
                 else -> {
                     log.error("[ERROR] Unexpected error: ", e)
@@ -91,9 +98,8 @@ class LangTestAbility(
         }
     }
 
-    override fun finish() {
+    override fun unsubscribe(chatId: Long) {
         testQueue.clear()
-        super.finish()
     }
 
     private fun editMessage(chatId: Long, messageId: Int, message: String) {

@@ -1,5 +1,7 @@
 package callback
 
+import command.Command
+
 sealed class Callback {
 
     companion object {
@@ -14,25 +16,25 @@ sealed class Callback {
         }
     }
 
-    data class SetLanguage(val languageId: Long) : Callback() {
+    data class SetLanguage(val languageId: Long) : Command() {
         companion object {
             const val CALLBACK = "langtestsetlanguage"
             fun buildCallBackQuery(languageId: Long): String = "$CALLBACK $languageId"
         }
     }
-    data class SetCategory(val categoryId: Long) : Callback() {
+    data class SetCategory(val categoryId: Long) : Command() {
         companion object {
             const val CALLBACK = "langtestsetcategory"
             fun buildCallBackQuery(categoryId: Long): String = "$CALLBACK $categoryId"
         }
     }
-    data class Answer(val isCorrect: Boolean) : Callback() {
+    data class Answer(val isCorrect: Boolean) : Command() {
         companion object {
             const val CALLBACK = "langtestanswer"
             fun buildCallBackQuery(isCorrect: Boolean): String = "$CALLBACK $isCorrect"
         }
     }
-    data class Exam(val start: Boolean) : Callback() {
+    data class Exam(val start: Boolean) : Command() {
         companion object {
             const val CALLBACK = "langtestexam"
             fun buildCallBackQuery(start: Boolean): String = "$CALLBACK $start"

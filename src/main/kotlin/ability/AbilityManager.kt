@@ -1,60 +1,44 @@
 package ability
 
-import bot.Bot
 import org.slf4j.LoggerFactory
 
-class AbilityManager(private val bot: Bot) : IAbilityManager {
-    
+class AbilityManager : IAbilityManager {
+
+    private val lock = Any()
     private val log = LoggerFactory.getLogger(javaClass.simpleName)
-    private val abilityMap: MutableMap<Long, AbstractAbility> = mutableMapOf()
-    
-    override fun addAbility(chatId: Long, ability: AbstractAbility) {
-        if (abilityMap[chatId] == null) {
-            log.info("[INFO] ${ability.javaClass.simpleName} added to chatId: $chatId")
-            abilityMap[chatId] = ability
-        } else {
-            log.warn("[WARN] ability ${ability.javaClass.simpleName} already exist for chatId: $chatId")
+    private val abilityMap: MutableMap<Class<out IAbility>, IAbility> = mutableMapOf()
+
+    override fun addAbility(abilityClass: Class<out IAbility>, ability: IAbility) {
+        synchronized(lock) {
+            if (abilityMap[abilityClass] == null) {
+                log.info("[INFO] ${ability.javaClass.simpleName} added to Ability Manager")
+                abilityMap[abilityClass] = ability
+            } else {
+                log.warn("[WARN] ${ability.javaClass.simpleName} already exist.")
+            }
         }
     }
 
-    override fun addAndStartAbility(chatId: Long, ability: AbstractAbility) {
-        if (abilityMap[chatId] == null) {
-            log.info("[INFO] ${ability.javaClass.simpleName} added to chatId: $chatId")
-            abilityMap[chatId] = ability
-            abilityMap[chatId]!!.start()
-        } else {
-            log.warn("[WARN] ability ${ability.javaClass.simpleName} already exist for chatId: $chatId")
+    override fun removeAbility(abilityClass: Class<out IAbility>) {
+        try {
+            synchronized(lock) {
+                abilityMap.remove(abilityClass)
+            }
+            log.info("[INFO] ${abilityClass.javaClass.simpleName} has removed for.")
+        } catch (e: NullPointerException) {
+            log.error("[ERROR] ${abilityClass.javaClass.simpleName} was not found", e)
         }
     }
 
-    override fun startAbility(chatId: Long) {
-        try {
-            val ability = abilityMap[chatId]!!
-            ability.start()
-            log.info("[INFO] ${ability.javaClass.simpleName} started for chatId: $chatId")
-        } catch (e: NullPointerException) {
-            log.error("[ERROR] Ability with chatId: $chatId is not found", e)
-        }
-    }
-    
-    override fun finishAbility(chatId: Long) {
-        try {
-            val ability = abilityMap[chatId]!!
-            ability.finish()
-            abilityMap.remove(chatId)
-            log.info("[INFO] ${ability.javaClass.simpleName} finished and removed for chatId: $chatId")
-        } catch (e: NullPointerException) {
-            log.error("[ERROR] Ability with chatId: $chatId is not found", e)
-        }
-    }
-
-    override fun abilityAction(chatId: Long, any: Any?) {
-        try {
-            val ability = abilityMap[chatId]!!
-            ability.action(any)
-            log.info("[INFO] ${ability.javaClass.simpleName} action for chatId: $chatId")
-        } catch (e: NullPointerException) {
-            log.error("[ERROR] Ability with chatId: $chatId is not found", e)
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : IAbility> getAbility(abilityClass: Class<T>): T? {
+        return try {
+            synchronized(lock) {
+                abilityMap[abilityClass] as T
+            }
+        } catch (e: TypeCastException) {
+            log.error("${abilityClass.simpleName} must implements IAbility interface.", e)
+            null
         }
     }
 }

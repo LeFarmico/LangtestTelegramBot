@@ -1,10 +1,10 @@
 package command
 
-class CommandParser {
+class UpdateParser(private val text: String) {
 
-    fun toParsedCommand(text: String, botName: String): ParsedCommand {
+    fun toParsedCommand(botName: String): DelimitedCommand {
         val trimText = text.trim()
-        val noneCommand = ParsedCommand(Command.None, trimText)
+        val noneCommand = DelimitedCommand(Command.None, trimText)
 
         if (trimText.isEmpty()) return noneCommand
         val commandAndText = getDelimitedCommand(trimText)
@@ -14,9 +14,9 @@ class CommandParser {
                 val commandText = cutCommandFromText(commandAndText.first)
                 val command = getCommandFromText(commandText)
 
-                ParsedCommand(command, commandAndText.second)
+                DelimitedCommand(command, commandAndText.second)
             } else {
-                ParsedCommand(Command.NotForMe, commandAndText.second)
+                DelimitedCommand(Command.NotForMe, commandAndText.second)
             }
         }
         return noneCommand

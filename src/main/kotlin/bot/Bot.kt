@@ -90,8 +90,8 @@ class Bot(
                     LangTestAbility(controller, request.chatId)
                 )
             }
-            is SendData.LangTest.Answer -> abilityManager.abilityAction(request.chatId, request.testAnswerData)
-            is SendData.LangTest.Finish -> abilityManager.finishAbility(request.chatId)
+            is SendData.LangTest.Answer -> abilityManager.getAbility(request.chatId, request.testAnswerData)
+            is SendData.LangTest.Finish -> abilityManager.removeAbility(request.chatId)
         }
     }
 
