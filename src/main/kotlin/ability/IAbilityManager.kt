@@ -2,15 +2,9 @@ package ability
 
 interface IAbilityManager {
 
-    fun addAbility(chatId: Long, ability: AbstractAbility)
+    fun addAbility(abilityClass: Class<out IAbility>, ability: IAbility)
 
-    fun addAndStartAbility(chatId: Long, ability: AbstractAbility)
+    fun removeAbility(abilityClass: Class<out IAbility>)
 
-    fun startAbility(chatId: Long)
-
-    fun finishAbility(chatId: Long)
-
-    fun abilityAction(chatId: Long, any: Any? = null)
-
-
+    fun <T : IAbility> getAbility(abilityClass: Class<T>): T?
 }

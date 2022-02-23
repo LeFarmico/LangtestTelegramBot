@@ -24,7 +24,7 @@ class MessageBuilder(private val chatId: Long) {
         return this
     }
 
-    fun enableMarkdown(enable: Boolean) : MessageBuilder {
+    fun enableMarkdown(enable: Boolean): MessageBuilder {
         sendMessage.enableMarkdown(enable)
         return this
     }

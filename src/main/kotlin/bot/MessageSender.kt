@@ -14,7 +14,11 @@ class MessageSender(private val controller: IMessageController) : IMessageSender
     private val log = LoggerFactory.getLogger(this::class.java)
     private var isRunning = true
 
-    override suspend fun start() {
+    override fun send(sendData: SendData) {
+        TODO("Not yet implemented")
+    }
+
+    suspend fun start() {
         log.info("[START] Message scheduler started. Sender.class: ${javaClass.simpleName}")
         isRunning = true
         while (isRunning) {
@@ -31,13 +35,13 @@ class MessageSender(private val controller: IMessageController) : IMessageSender
         }
     }
 
-    override fun add(chatId: Long, callbackType: SendData) {
+    fun add(chatId: Long, callbackType: SendData) {
         timedSendDataQueue.add(Pair(chatId, callbackType))
     }
 
-    override fun isSenderStarted(): Boolean = isRunning
+    fun isSenderStarted(): Boolean = isRunning
 
-    override fun stop(): Boolean {
+    fun stop(): Boolean {
         return if (!isRunning) {
             log.info("[WARN] Message scheduler already stopped.")
             false
@@ -48,7 +52,7 @@ class MessageSender(private val controller: IMessageController) : IMessageSender
         }
     }
 
-    override fun scheduleMessage(chatId: Long, callbackType: SendData) {
+    fun scheduleMessage(chatId: Long, callbackType: SendData) {
         if (!callbackType.notified) {
             permanentMessage(chatId, callbackType)
         } else {
@@ -71,4 +75,6 @@ class MessageSender(private val controller: IMessageController) : IMessageSender
     companion object {
         const val SLEEP_TIME: Long = 1000
     }
+
+
 }
