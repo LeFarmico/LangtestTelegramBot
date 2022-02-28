@@ -1,12 +1,14 @@
 package callback
 
+import command.Command
+
 class CallbackParser(private val callbackText: String) {
 
-    fun toCallback(): Callback {
+    fun toCommand(): Command {
         val text = callbackText.trim().lowercase()
         val delimitedCallback = getDelimitedCallback(text)
 
-        return Callback.getCallback(delimitedCallback.callback, delimitedCallback.callbackData ?: "")
+        return Command.getCommand(delimitedCallback.callback, delimitedCallback.callbackData ?: "")
     }
 
     private fun getDelimitedCallback(callbackText: String): DelimitedCallback {
