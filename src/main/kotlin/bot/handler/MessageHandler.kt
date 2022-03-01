@@ -1,4 +1,4 @@
-package handler
+package bot.handler
 
 import command.Command
 import command.CommandRequestData
@@ -8,6 +8,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import res.Params
 import utils.getChatId
+import utils.getMessageId
 
 class MessageHandler(private val update: Update) {
 
@@ -24,7 +25,7 @@ class MessageHandler(private val update: Update) {
 
     private fun getCommandWithInfo(): CommandRequestData {
         val chatId = update.getChatId
-        val messageId = update.message.messageId
+        val messageId = update.getMessageId
         return CommandRequestData(chatId, messageId, getDelimitedCommand())
     }
     private fun markdownMessageBuilder(chatId: Long, message: String): SendMessage {

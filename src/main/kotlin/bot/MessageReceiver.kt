@@ -1,16 +1,14 @@
 package bot
 
-import callback.ICallbackManager
 import command.ICommandManager
-import handler.CallbackHandler
-import handler.MessageHandler
+import bot.handler.MessageHandler
 import kotlinx.coroutines.delay
 import org.slf4j.LoggerFactory
 import org.telegram.telegrambots.meta.api.objects.Update
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class MessageReceiver(private val commandManager: ICommandManager, private val callbackManager: ICallbackManager) : IMessageReceiver {
+class MessageReceiver(private val commandManager: ICommandManager) : IMessageReceiver {
 
     private val receiveQueue: Queue<Update> = ConcurrentLinkedQueue()
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -53,15 +51,16 @@ class MessageReceiver(private val commandManager: ICommandManager, private val c
 
     private fun receive(update: Update) {
         log.info("Handle receiver: $update")
-        if (checkForCallback(update)) {
-            CallbackHandler(update).handle {
-                callbackManager.callbackAction(it)
-            }
-        } else {
-            MessageHandler(update).handle {
-                // TODO handle result
-            }
+        MessageHandler(update).handle {
+            commandManager.commandAction(it)
         }
+//        if (checkForCallback(update)) {
+//
+//        } else {
+//            MessageHandler(update).handle {
+//                // TODO handle result
+//            }
+//        }
 //        controller.schedule(chatId, messageType)
     }
 

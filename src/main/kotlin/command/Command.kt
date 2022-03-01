@@ -1,7 +1,5 @@
 package command
 
-import callback.Callback
-
 sealed class Command {
 
     companion object {
@@ -13,10 +11,10 @@ sealed class Command {
                 // LangTestAbility
                 BeginTest.COMMAND -> BeginTest
                 TimeToNextTest.COMMAND -> TimeToNextTest
-                SetLanguage.COMMAND -> Callback.SetLanguage(commandData.toLong())
-                SetCategory.COMMAND -> Callback.SetCategory(commandData.toLong())
-                Answer.COMMAND -> Callback.Answer(commandData.toBoolean())
-                Exam.COMMAND -> Callback.Exam(commandData.toBoolean())
+                SetLanguage.COMMAND -> SetLanguage(commandData.toLong())
+                SetCategory.COMMAND -> SetCategory(commandData.toLong())
+                Answer.COMMAND -> Answer(commandData.toBoolean())
+                Exam.COMMAND -> Exam(commandData.toBoolean())
 
                 else -> None
             }

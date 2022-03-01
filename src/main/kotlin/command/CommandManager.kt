@@ -28,15 +28,17 @@ class CommandManager(
     override fun commandAction(commandRequestData: CommandRequestData) {
         val chatId = commandRequestData.chatId
         val messageId = commandRequestData.messageId
-        when (val command = commandRequestData.delimitedCommand.command) {
+        when (val command = commandRequestData.command) {
             Command.BeginTest -> langTestAbility?.subscribe(chatId)
             Command.Help -> sendMessage(
+                chatId,
                 MessageBuilder.setChatId(chatId)
                     .enableMarkdown(true)
                     .setText(SystemMessages.helpMsg)
                     .build()
             )
             Command.Start -> sendMessage(
+                chatId,
                 MessageBuilder.setChatId(chatId)
                     .enableMarkdown(true)
                     .setText(SystemMessages.startMsg)
@@ -47,10 +49,10 @@ class CommandManager(
                 sendTimeToNextTest(chatId)
             }
             Command.None -> messageSender.send(Empty)
-            is Command.Answer -> langTestAbility?.action(AbilityCommand(chatId, messageId, command))
-            is Command.Exam -> langTestAbility?.action(AbilityCommand(chatId, messageId, command))
-            is Command.SetCategory -> langTestAbility?.action(AbilityCommand(chatId, messageId, command))
-            is Command.SetLanguage -> langTestAbility?.action(AbilityCommand(chatId, messageId, command))
+            is Command.Answer -> langTestAbility?.commandAction(AbilityCommand(chatId, messageId, command))
+            is Command.Exam -> langTestAbility?.commandAction(AbilityCommand(chatId, messageId, command))
+            is Command.SetCategory -> langTestAbility?.commandAction(AbilityCommand(chatId, messageId, command))
+            is Command.SetLanguage -> langTestAbility?.commandAction(AbilityCommand(chatId, messageId, command))
         }
     }
 
@@ -58,12 +60,13 @@ class CommandManager(
         return try {
             abilityManager.getAbility(abilityClass)
         } catch (e: NullPointerException) {
-            log.error("Ability not found", e)
+            log.error("[ERROR] Ability not found", e)
             null
         }
     }
-    private fun sendMessage(sendMessage: SendMessage) {
-        messageSender.send(UserMessage(sendMessage))
+
+    private fun sendMessage(chatId: Long, sendMessage: SendMessage) {
+        messageSender.send(UserMessage(chatId, sendMessage))
     }
 
     private suspend fun sendTimeToNextTest(chatId: Long) {
@@ -73,12 +76,12 @@ class CommandManager(
             val msg = MessageBuilder.setChatId(chatId)
                 .setText(text)
                 .build()
-            messageSender.send(UserMessage(msg))
+            messageSender.send(UserMessage(chatId, msg))
         } catch (e: NullPointerException) {
             val msg = MessageBuilder.setChatId(chatId)
                 .setText(SystemMessages.notRegistered)
                 .build()
-            messageSender.send(UserMessage(msg))
+            messageSender.send(UserMessage(chatId, msg))
         }
     }
 }

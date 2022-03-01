@@ -1,25 +1,36 @@
 package command
 
-class UpdateParser(private val text: String) {
+import org.telegram.telegrambots.meta.api.objects.Update
+import res.Params
 
-    fun toParsedCommand(botName: String): DelimitedCommand {
+class UpdateParser(private val update: Update) {
+
+    fun parse(): Command {
+        return if (update.message != null) {
+            toCommand(update.message.text)
+        } else if (update.callbackQuery.message != null) {
+            CallbackParser(update.callbackQuery.data).toCommand()
+        } else {
+            Command.None
+        }
+    }
+
+    private fun toCommand(text: String): Command {
+
         val trimText = text.trim()
-        val noneCommand = DelimitedCommand(Command.None, trimText)
 
-        if (trimText.isEmpty()) return noneCommand
+        if (trimText.isEmpty()) return Command.None
+
         val commandAndText = getDelimitedCommand(trimText)
-
         if (isCommand(commandAndText.first)) {
-            return if (isCommandForBot(commandAndText.first, botName)) {
+            return if (isCommandForBot(commandAndText.first, Params.botName)) {
                 val commandText = cutCommandFromText(commandAndText.first)
-                val command = getCommandFromText(commandText)
-
-                DelimitedCommand(command, commandAndText.second)
+                getCommandFromText(commandText, commandAndText.second)
             } else {
-                DelimitedCommand(Command.NotForMe, commandAndText.second)
+                Command.NotForMe
             }
         }
-        return noneCommand
+        return Command.None
     }
 
     private fun getDelimitedCommand(commandText: String): Pair<String, String> {
@@ -51,7 +62,10 @@ class UpdateParser(private val text: String) {
         }
     }
 
-    private fun getCommandFromText(text: String): Command = Command.getCommand(text)
+    private fun getCommandFromText(
+        commandText: String,
+        dataText: String? = null
+    ): Command = Command.getCommand(commandText, dataText ?: "")
 
     companion object {
         const val CMD_PREFIX = "/"
