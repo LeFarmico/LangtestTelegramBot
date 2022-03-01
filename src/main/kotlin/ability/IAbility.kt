@@ -6,7 +6,7 @@ interface IAbility {
 
     fun subscribe(chatId: Long)
 
-    fun action(data: AbilityCommand? = null)
+    fun commandAction(data: AbilityCommand? = null)
     
     fun unsubscribe(chatId: Long)
 }

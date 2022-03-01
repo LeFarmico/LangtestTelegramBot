@@ -4,7 +4,7 @@ import entity.WordData
 
 interface WordsRepository {
 
-    suspend fun getUnansweredWordsCategoryByChatId(chatId: Long): List<WordData>?
+    suspend fun getUnansweredWordsCategoryByChatId(chatId: Long, count: Int?): List<WordData>?
 
     suspend fun createWordsCategoryByChatId(chatId: Long, categoryId: Long): Boolean
 

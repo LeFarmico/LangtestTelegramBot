@@ -1,3 +1,3 @@
 package command
 
-data class CommandRequestData(val chatId: Long, val messageId: Int, val delimitedCommand: DelimitedCommand)
+data class CommandRequestData(val chatId: Long, val messageId: Int, val command: Command)

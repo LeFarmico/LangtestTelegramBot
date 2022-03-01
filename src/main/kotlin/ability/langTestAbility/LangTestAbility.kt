@@ -1,13 +1,10 @@
 package ability.langTestAbility
 
-import ability.AbilityState
 import ability.IAbility
-import bot.IMessageController
 import bot.MessageSender
 import command.Command
-import entity.SendData
-import entity.User
-import entity.WordData
+import entity.EditMessage
+import entity.UserMessage
 import inject.DataInjector
 import kotlinx.coroutines.*
 import messageBuilders.ButtonBuilder
@@ -21,7 +18,6 @@ import repository.UserRepository
 import repository.WordsRepository
 import res.SystemMessages
 import java.util.*
-import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.collections.List
 
 class LangTestAbility(
@@ -30,76 +26,59 @@ class LangTestAbility(
 
     private val log = LoggerFactory.getLogger(javaClass.simpleName)
 
-    private val userList = mutableListOf<LangTestUserStatus>()
+    private val userList = mutableMapOf<Long, LangTestUserStatus>()
     private val timer by lazy { Timer(true) }
 
     private val userRepo: UserRepository = DataInjector.userRepo
     private val wordsRepository: WordsRepository = DataInjector.wordsRepo
-    lateinit var languageRepository: LanguageRepository
-    
-    private var user: User? = null
+    private lateinit var languageRepository: LanguageRepository
 
     override fun subscribe(chatId: Long) {
         CoroutineScope(Dispatchers.IO).launch {
             userRepo.addUser(chatId, 1)
-            user = userRepo.getUserByChatId(chatId)!!
+            val user = userRepo.getUserByChatId(chatId)
             wordsRepository.createWordsCategoryByChatId(chatId, user!!.categoryId)
-            val wordsList = wordsRepository.getUnansweredWordsCategoryByChatId(chatId)
-            createWordsForTest(wordsList)
-            action()
+
+            try {
+                userList[chatId] = LangTestUserStatus(user).apply {
+                    setWords(
+                        wordsRepository.getUnansweredWordsCategoryByChatId(chatId, user.wordsInTest)!!
+                    )
+                }
+                startTest(chatId)
+            } catch (e: NullPointerException) {
+                log.error("[ERROR] Something went wrong with chatId: $chatId.", e)
+            }
         }
     }
 
-    override fun action(data: AbilityCommand?) {
-        when (data?.command) {
-            is Command.Answer -> TODO()
+    override fun commandAction(data: AbilityCommand?) {
+        val user = userList[data!!.chatId]!!
+        when (val command = data.command) {
+            is Command.Answer -> {
+                user.answer(command.isCorrect)
+                user.next()
+            }
             Command.BeginTest -> TODO()
             is Command.Exam -> TODO()
             is Command.SetCategory -> TODO()
             is Command.SetLanguage -> TODO()
             Command.TimeToNextTest -> TODO()
-            else -> {log.warn("[WARN] action not for ${javaClass.simpleName}")}
+            else -> { log.warn("[WARN] The action not for ${javaClass.simpleName}") }
         }
-        try {
-            val answerData = data as TestAnswerData
-            when (answerData.isCorrect) {
-                true -> {
-                    val wordId = testQueue.poll().wordId
-                    acceptAnswer(wordId, chatId)
-                    editMessage(chatId, answerData.messageId, SystemMessages.rightAnswer)
-                }
-                false -> {
-                    val testQuestionData = testQueue.poll()
-                    deniedAnswer(testQuestionData)
-                    editMessage(chatId, answerData.messageId, SystemMessages.wrongAnswer)
-                }
-            }
-        } catch (e: Exception) {
-            when (e) {
-                is NullPointerException -> {}
-                is TypeCastException -> {
-                    log.error("[ERROR] Unexpected type for actionData: ${data!!.javaClass.simpleName}", e)
-                }
-                else -> {
-                    log.error("[ERROR] Unexpected error: ", e)
-                }
-            }
-        }
-        CoroutineScope(Dispatchers.Default).launch {
-            if (checkForQuestions()) {
-                sendMessage(chatId, getNext()!!.sendData)
-            } else {
-                if (checkForExam()) {
-                    askForExam(chatId)
-                } else {
-                    scheduleNextTest()
-                }
-            }
+    }
+
+    private fun startTest(chatId: Long) {
+        val test = userList[chatId]?.next()
+        if (test != null) {
+            sendTest(chatId, test)
+        } else {
+            // TODO not registered message
         }
     }
 
     override fun unsubscribe(chatId: Long) {
-        testQueue.clear()
+        userList.remove(chatId)
     }
 
     private fun editMessage(chatId: Long, messageId: Int, message: String) {
@@ -107,37 +86,13 @@ class LangTestAbility(
             .chatAndMessageId(chatId, messageId)
             .newMessage(message)
             .build()
-        messageController.schedule(chatId, SendData.EditMessage(editMessage))
+        messageSender.send(EditMessage(chatId, editMessage))
     }
 
-    private fun sendMessage(chatId: Long, type: SendData) {
-        messageController.schedule(chatId, type)
-    }
-    
-    private fun checkForQuestions(): Boolean {
-        return testQueue.isNotEmpty()
-    }
-
-    private suspend fun checkForExam(): Boolean {
-        return wordsRepository.getUnansweredWordsCategoryByChatId(chatId)!!.isEmpty()
-    }
-
-    private fun getNext(): TestQuestionData? {
-        return try {
-            testQueue.peek()
-        } catch (e: NullPointerException) {
-            null
-        }
-    }
-    
     private fun acceptAnswer(wordId: Long, chatId: Long) {
         CoroutineScope(Dispatchers.IO).launch {
             wordsRepository.addCorrectAnswer(wordId, chatId)
         }
-    }
-    
-    private fun deniedAnswer(testQuestionData: TestQuestionData) {
-        testQueue.add(testQuestionData)
     }
 
     private suspend fun askForLanguage(chatId: Long) {
@@ -162,40 +117,47 @@ class LangTestAbility(
                     .addButton(SystemMessages.no, EXAM_NO)
                     .build()
             }.build()
-        messageController.schedule(chatId, SendData.SendMessage(askMessage))
+        messageSender.send(UserMessage(chatId, askMessage))
     }
+    
+//    private suspend fun checkForExam(): Boolean {
+//        return wordsRepository.getUnansweredWordsCategoryByChatId(chatId)!!.isEmpty()
+//    }
+//    private fun scheduleNextTest() {
+//        try {
+//            val notifySendData = SendData.SendMessage(
+//                MessageBuilder.setChatId(chatId)
+//                    .setText(SystemMessages.nextTestNotifyMessage(user!!.breakTimeInMillis))
+//                    .build()
+//            )
+//            messageController.schedule(chatId, notifySendData)
+//            timer.schedule(ScheduleQuiz(user), user!!.breakTimeInMillis)
+//            log.info("Next test scheduled for $chatId")
+//        } catch (e: NullPointerException) {
+//            log.error("Next test not scheduled", e)
+//        }
+//    }
+//    inner class ScheduleQuiz(private val user: User?) : TimerTask() {
+//        override fun run() {
+//            if (user != null) {
+//                CoroutineScope(Dispatchers.Default).launch {
+//                    val wordsList = wordsRepository.getUnansweredWordsCategoryByChatId(user.chatId, user.wordsInTest)
+//                    sendTest(wordsList)
+//                    commandAction()
+//                }
+//            }
+//        }
+//    }
 
-    private fun scheduleNextTest() {
+    private fun sendTest(chatId: Long, testData: TestData) {
         try {
-            val notifySendData = SendData.SendMessage(
-                MessageBuilder.setChatId(chatId)
-                    .setText(SystemMessages.nextTestNotifyMessage(user!!.breakTimeInMillis))
-                    .build()
+            val message = createTestMessage(
+                chatId = chatId,
+                wordToTranslate = testData.wordToTranslate,
+                correctAnswer = testData.answer,
+                wrongAnswers = testData.falseAnswers
             )
-            messageController.schedule(chatId, notifySendData)
-            timer.schedule(ScheduleExam(user), user!!.breakTimeInMillis)
-            log.info("Next test scheduled for $chatId")
-        } catch (e: NullPointerException) {
-            log.error("Next test not scheduled", e)
-        }
-    }
-
-    private fun createWordsForTest(wordsList: List<WordData>?) {
-        try {
-            for (i in wordsList!!.indices) {
-                val wordData = wordsList[i]
-                val wordId = wordData.id
-                val message = createTestMessage(
-                    chatId = chatId,
-                    wordToTranslate = wordData.word,
-                    correctAnswer = wordData.translate,
-                    wrongAnswers = wordsList
-                        .map { it.translate }
-                        .filter { it != wordData.translate }
-                )
-                val sendType = SendData.SendMessage(message)
-                testQueue.add(TestQuestionData(chatId, sendType, wordId))
-            }
+            messageSender.send(UserMessage(chatId, message))
         } catch (e: NullPointerException) {
             log.error("Can't find words for $chatId", e)
         }
@@ -215,27 +177,15 @@ class LangTestAbility(
 
     private fun createAnswerButtonList(correctAnswer: String, wrongAnswers: List<String>): InlineKeyboardMarkup {
         var buttonBuilder = ButtonBuilder.setUp()
-            .addButton(correctAnswer, RIGHT_ANSWER)
+            .addButton(correctAnswer, Command.Answer.buildCallBackQuery(true))
         val answers = wrongAnswers.shuffled().take(2)
 
         for (i in answers.indices) {
-            buttonBuilder = buttonBuilder.addButton(answers[i], WRONG_ANSWER)
+            buttonBuilder = buttonBuilder.addButton(answers[i], Command.Answer.buildCallBackQuery(false))
         }
         return buttonBuilder.build(isVertical = true, shuffled = true)
     }
-
-    inner class ScheduleExam(private val user: User?) : TimerTask() {
-        override fun run() {
-            if (user != null) {
-                CoroutineScope(Dispatchers.Default).launch {
-                    val wordsList = wordsRepository.getUnansweredWordsCategoryByChatId(chatId)
-                    createWordsForTest(wordsList)
-                    action()
-                }
-            }
-        }
-    }
-
+    
     companion object {
         const val RIGHT_ANSWER = "langtestright"
         const val WRONG_ANSWER = "langtestwrong"

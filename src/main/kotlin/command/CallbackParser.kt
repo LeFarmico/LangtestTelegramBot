@@ -1,6 +1,4 @@
-package callback
-
-import command.Command
+package command
 
 class CallbackParser(private val callbackText: String) {
 

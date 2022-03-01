@@ -3,7 +3,11 @@ package bot
 import ability.AbilityManager
 import ability.IAbilityManager
 import ability.langTestAbility.LangTestAbility
+import command.CommandManager
+import entity.EditMessage
+import entity.Empty
 import entity.SendData
+import entity.UserMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -20,8 +24,10 @@ class Bot(
     private val botToken: String
 ) : TimedSendLongPollingBot(), IBot {
 
-    override val controller: IMessageController = MessageController(this)
+    private val messageSender = MessageSender(this)
     override val abilityManager: IAbilityManager = AbilityManager()
+    private val commandManager = CommandManager(abilityManager, messageSender)
+    private val messageReceiver = MessageReceiver(commandManager)
     private val log = LoggerFactory.getLogger(this::class.java)
 
     override fun getBotToken(): String = botToken
@@ -32,7 +38,7 @@ class Bot(
         CoroutineScope(Dispatchers.IO).launch {
             log.info("Receive new Update. updateId: ${update?.updateId ?: "Invalid id"}.")
             try {
-                controller.receive(update!!)
+                messageReceiver.add(update!!)
             } catch (e: NullPointerException) {
                 log.error("[ERROR] receive on null object")
             }
@@ -41,10 +47,11 @@ class Bot(
 
     override suspend fun connect() {
         val telegramBotsApi = TelegramBotsApi(DefaultBotSession::class.java)
-        log.info("[STARTED] Bot connecting")
+        log.info("[LOADING] Bot connecting")
         try {
             telegramBotsApi.registerBot(this)
-            log.info("Telegram bot connected. Looking for messages")
+            log.info("[STARTED] Telegram bot connected. Looking for messages")
+            abilityManager.addAbility(LangTestAbility::class.java, LangTestAbility(messageSender))
         } catch (e: TelegramApiRequestException) {
             log.warn("Can't connect. Pause for ${RECONNECT_PAUSE / 100} sec. \n Error: ${e.message}")
 
@@ -55,8 +62,7 @@ class Bot(
         }
 
         CoroutineScope(Dispatchers.Default).launch {
-            launch { controller.startReceiver() }
-            launch { controller.startScheduler() }
+            launch { messageReceiver.start() }
         }
     }
 
@@ -66,32 +72,9 @@ class Bot(
             return
         }
         when (request) {
-            is SendData.SendMessage -> {
-                log.info("Use execute for: ${request.message.javaClass.simpleName}")
-                execute(request.message)
-            }
-            is SendData.TimedMsg -> {
-                log.info("Use execute for timed command: ${request.message.javaClass.simpleName}")
-                execute(request.message)
-            }
-            is SendData.Error -> log.error("[ERROR] request error.", request.exception)
-            SendData.Empty -> { log.info("[INFO] request is not identified: ${request.javaClass}") }
-            is SendData.LangTest -> langTestExecute(request)
-            is SendData.EditMessage -> execute(request.message)
-        }
-    }
-
-    private fun langTestExecute(request: SendData.LangTest) {
-        log.info("Use execute for LangTest command: ${request.javaClass.simpleName}")
-        when (request) {
-            is SendData.LangTest.Start -> {
-                abilityManager.addAndStartAbility(
-                    request.chatId,
-                    LangTestAbility(controller, request.chatId)
-                )
-            }
-            is SendData.LangTest.Answer -> abilityManager.getAbility(request.chatId, request.testAnswerData)
-            is SendData.LangTest.Finish -> abilityManager.removeAbility(request.chatId)
+            is EditMessage -> execute(request.message)
+            Empty -> { log.info("[INFO] request is not identified: ${request.javaClass}") }
+            is UserMessage -> execute(request.message)
         }
     }
 
