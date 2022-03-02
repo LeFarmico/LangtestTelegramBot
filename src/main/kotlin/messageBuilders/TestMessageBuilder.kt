@@ -1,0 +1,4 @@
+package messageBuilders
+
+class TestMessageBuilder {
+}
