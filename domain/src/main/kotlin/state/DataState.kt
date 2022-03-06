@@ -1,0 +1,4 @@
+package state
+
+class DataState {
+}
