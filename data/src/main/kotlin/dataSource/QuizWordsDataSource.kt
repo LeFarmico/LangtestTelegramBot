@@ -21,9 +21,9 @@ class QuizWordsDataSource {
         }
     }
 
-    fun deleteQuizWord(chatId: Long, wordId: Long) {
+    fun deleteQuizWord(chatId: Long, wordId: Long): Boolean {
         synchronized(lock) {
-            quizWords.find { quizWord ->
+            return quizWords.removeIf { quizWord ->
                 quizWord.chatId == chatId && quizWord.wordId == wordId
             }
         }
@@ -39,7 +39,7 @@ class QuizWordsDataSource {
         synchronized(lock) {
             return try {
                 val index = quizWords.indexOfFirst { it.chatId == chatId }
-                quizWords.removeAt(index)
+                quizWords[index]
             } catch (e: IndexOutOfBoundsException) {
                 null
             }

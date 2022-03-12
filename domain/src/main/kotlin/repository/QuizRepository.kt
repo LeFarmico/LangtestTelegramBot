@@ -13,6 +13,4 @@ interface QuizRepository {
     suspend fun addQuizWords(chatId: Long): Boolean
 
     suspend fun removeWordForUser(chatId: Long, wordId: Long): Boolean
-
-    suspend fun removeWordsForUser(chatId: Long, wordIdList: List<Long>): Boolean
 }

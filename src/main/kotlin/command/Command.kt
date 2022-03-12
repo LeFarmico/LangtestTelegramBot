@@ -18,7 +18,7 @@ sealed class Command {
                 IncorrectAnswerCallback.COMMAND -> IncorrectAnswerCallback(commandData.toLong())
                 AskExamCallback.COMMAND -> AskExamCallback(commandData.toBoolean())
                 SetLanguageCommand.COMMAND -> SetLanguageCommand
-                ContinueQuiz.COMMAND -> ContinueQuiz
+                GetQuizTest.COMMAND -> GetQuizTest
 
                 else -> None
             }
@@ -45,7 +45,7 @@ sealed class Command {
         const val COMMAND = "timetonexttest"
     }
 
-    object ContinueQuiz : Command() {
+    object GetQuizTest : Command() {
         const val COMMAND = "continuequiz"
         fun buildCallBackQuery(): String = COMMAND
     }

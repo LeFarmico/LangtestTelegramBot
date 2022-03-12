@@ -41,6 +41,16 @@ object SystemMessages {
 
     const val unexpectedError = "Упс! что-то пошло не так..."
 
+    const val quizStartQuestion = "Хотите начать викторину?"
+
+    const val quizContinueQuestion = "Хотите продолжить викторину?"
+
+    const val startAgain = "Начать заново?"
+
+    fun languageChooseMessage(languageName: String): String = "Вы выбрали $languageName язык."
+
+    fun categoryChooseMessage(categoryName: String): String = "Вы выбрали $categoryName категорию."
+
     fun nextTestNotifyMessage(timeInMillis: Long): String {
         val min = timeInMillis / 1000 / 60
         return when {
@@ -57,5 +67,12 @@ object SystemMessages {
                 "Следующий тест начнется через $min минут"
             }
         }
+    }
+
+    fun userSettingsMessage(language: String, category: String): String {
+        val msg = StringBuilder()
+        msg.append("Язык: $language \n")
+        msg.append("Категория: $category")
+        return msg.toString()
     }
 }
