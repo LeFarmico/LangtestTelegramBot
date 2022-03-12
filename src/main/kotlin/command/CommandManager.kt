@@ -4,7 +4,7 @@ import ability.IAbility
 import ability.IAbilityManager
 import ability.langTestAbility.AbilityCommand
 import ability.langTestAbility.LangTestAbility
-import ability.langTestAbility.LangTestCommand
+import ability.langTestAbility.LangTestAbilityCommand
 import bot.IMessageSender
 import entity.Empty
 import entity.UserMessage
@@ -47,14 +47,14 @@ class CommandManager(
             Command.StartCommand -> langTestAbility?.subscribe(chatId)
             Command.StopCommand -> langTestAbility?.unsubscribe(chatId)
 
-            is Command.StartQuizCallback -> langTestAbility?.commandAction(LangTestCommand(chatId, messageId, command))
-            is Command.CorrectAnswerCallback -> langTestAbility?.commandAction(LangTestCommand(chatId, messageId, command))
-            is Command.AskExamCallback -> langTestAbility?.commandAction(LangTestCommand(chatId, messageId, command))
-            is Command.SetCategoryCallback -> langTestAbility?.commandAction(LangTestCommand(chatId, messageId, command))
-            is Command.SetLanguageCallBack -> langTestAbility?.commandAction(LangTestCommand(chatId, messageId, command))
-            Command.SetLanguageCommand -> TODO()
-            is Command.IncorrectAnswerCallback -> langTestAbility?.commandAction(LangTestCommand(chatId, messageId, command))
-            Command.ContinueQuiz -> langTestAbility?.commandAction(LangTestCommand(chatId, messageId, command))
+            is Command.StartQuizCallback -> langTestAbility?.commandAction(LangTestAbilityCommand(chatId, messageId, command))
+            is Command.CorrectAnswerCallback -> langTestAbility?.commandAction(LangTestAbilityCommand(chatId, messageId, command))
+            is Command.AskExamCallback -> langTestAbility?.commandAction(LangTestAbilityCommand(chatId, messageId, command))
+            is Command.SetCategoryCallback -> langTestAbility?.commandAction(LangTestAbilityCommand(chatId, messageId, command))
+            is Command.SetLanguageCallBack -> langTestAbility?.commandAction(LangTestAbilityCommand(chatId, messageId, command))
+            Command.SetLanguageCommand -> langTestAbility?.commandAction(LangTestAbilityCommand(chatId, messageId, command))
+            is Command.IncorrectAnswerCallback -> langTestAbility?.commandAction(LangTestAbilityCommand(chatId, messageId, command))
+            Command.GetQuizTest -> langTestAbility?.commandAction(LangTestAbilityCommand(chatId, messageId, command))
         }
     }
 
