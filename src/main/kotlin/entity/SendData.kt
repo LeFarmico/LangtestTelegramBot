@@ -9,5 +9,6 @@ sealed interface SendData {
 }
 
 data class UserMessage(override val chatId: Long, val message: BotApiMethod<Message>) : SendData
-data class EditMessage(override val chatId: Long, val message: BotApiMethod<Serializable>) : SendData
+data class EditUserMessage(override val chatId: Long, val message: BotApiMethod<Serializable>) : SendData
+data class DeleteUserMessage(override val chatId: Long, val deleteMessage: BotApiMethod<Boolean>) : SendData
 object Empty : SendData { override val chatId: Long? = null }

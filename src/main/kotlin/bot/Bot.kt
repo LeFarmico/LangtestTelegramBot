@@ -4,10 +4,7 @@ import ability.AbilityManager
 import ability.IAbilityManager
 import ability.langTestAbility.LangTestAbility
 import command.CommandManager
-import entity.EditMessage
-import entity.Empty
-import entity.SendData
-import entity.UserMessage
+import entity.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -72,9 +69,10 @@ class Bot(
             return
         }
         when (request) {
-            is EditMessage -> execute(request.message)
+            is EditUserMessage -> execute(request.message)
             Empty -> { log.info("[INFO] request is not identified: ${request.javaClass}") }
             is UserMessage -> execute(request.message)
+            is DeleteUserMessage -> execute(request.deleteMessage)
         }
     }
 

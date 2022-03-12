@@ -1,14 +1,18 @@
 package ability
 
+import ability.langTestAbility.AbilityCommand
 import org.slf4j.LoggerFactory
 
 class AbilityManager : IAbilityManager {
 
     private val lock = Any()
     private val log = LoggerFactory.getLogger(javaClass.simpleName)
-    private val abilityMap: MutableMap<Class<out IAbility>, IAbility> = mutableMapOf()
+    private val abilityMap: MutableMap<Class<out IAbility<out AbilityCommand>>, IAbility<out AbilityCommand>> = mutableMapOf()
 
-    override fun addAbility(abilityClass: Class<out IAbility>, ability: IAbility) {
+    override fun addAbility(
+        abilityClass: Class<out IAbility<out AbilityCommand>>,
+        ability: IAbility<out AbilityCommand>
+    ) {
         synchronized(lock) {
             if (abilityMap[abilityClass] == null) {
                 log.info("[INFO] ${ability.javaClass.simpleName} added to Ability Manager")
@@ -19,7 +23,7 @@ class AbilityManager : IAbilityManager {
         }
     }
 
-    override fun removeAbility(abilityClass: Class<out IAbility>) {
+    override fun removeAbility(abilityClass: Class<out IAbility<out AbilityCommand>>) {
         try {
             synchronized(lock) {
                 abilityMap.remove(abilityClass)
@@ -31,7 +35,7 @@ class AbilityManager : IAbilityManager {
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : IAbility> getAbility(abilityClass: Class<T>): T? {
+    override fun <T : IAbility<out AbilityCommand>> getAbility(abilityClass: Class<out T>): T? {
         return try {
             synchronized(lock) {
                 abilityMap[abilityClass] as T

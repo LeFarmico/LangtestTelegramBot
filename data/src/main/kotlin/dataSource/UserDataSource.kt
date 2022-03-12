@@ -9,12 +9,13 @@ class UserDataSource {
     private val userList = mutableListOf<User>()
     private var id: Long = 1
 
-    fun add(chatId: Long, languageId: Long): Long {
+    fun add(chatId: Long, languageId: Long, categoryId: Long): Long {
         synchronized(lock) {
             val user = User(
                 id = id++,
                 chatId = chatId,
-                languageId = languageId
+                languageId = languageId,
+                categoryId = categoryId
             )
             userList.add(user)
             return user.id
@@ -94,6 +95,30 @@ class UserDataSource {
             return try {
                 val index = userList.indexOfFirst { it.id == userId }
                 userList[index] = userList[index].copy(categoryId = categoryId)
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
+    }
+
+    fun setLanguageById(userId: Long, languageId: Long): Boolean {
+        synchronized(lock) {
+            return try {
+                val index = userList.indexOfFirst { it.id == userId }
+                userList[index] = userList[index].copy(languageId = languageId)
+                true
+            } catch (e: Exception) {
+                false
+            }
+        }
+    }
+
+    fun setLanguageByChatId(userId: Long, languageId: Long): Boolean {
+        synchronized(lock) {
+            return try {
+                val index = userList.indexOfFirst { it.id == userId }
+                userList[index] = userList[index].copy(languageId = languageId)
                 true
             } catch (e: Exception) {
                 false

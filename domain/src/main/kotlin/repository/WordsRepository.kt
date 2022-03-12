@@ -3,10 +3,9 @@ package repository
 import entity.WordData
 
 interface WordsRepository {
+    suspend fun getWordsByCategory(categoryId: Long): List<WordData>
 
-    suspend fun getUnansweredWordsCategoryByChatId(chatId: Long, count: Int?): List<WordData>?
+    suspend fun getWordsById(wordIdList: List<Long>): List<WordData>
 
-    suspend fun createWordsCategoryByChatId(chatId: Long, categoryId: Long): Boolean
-
-    suspend fun addCorrectAnswer(wordId: Long, chatId: Long): Boolean
+    suspend fun getWordById(wordId: Long): WordData?
 }

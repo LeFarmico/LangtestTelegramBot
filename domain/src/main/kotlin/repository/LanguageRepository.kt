@@ -4,5 +4,7 @@ import entity.Language
 
 interface LanguageRepository {
 
-    fun getAvailableLanguages(): List<Language>
+    suspend fun getAvailableLanguages(): List<Language>
+
+    suspend fun getLanguageById(languageId: Long): Language?
 }

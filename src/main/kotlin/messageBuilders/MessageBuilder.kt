@@ -3,7 +3,7 @@ package messageBuilders
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 
-class MessageBuilder(private val chatId: Long) {
+class MessageBuilder private constructor(private val chatId: Long) {
     
     private val sendMessage = SendMessage().apply { 
         chatId = this@MessageBuilder.chatId.toString()

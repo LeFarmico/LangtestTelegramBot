@@ -21,6 +21,8 @@ object SystemMessages {
 
     const val chooseLanguage = "Выберите язык из предложенных"
 
+    const val chooseCategory = "Выберите категорию из предложенных"
+
     const val askForExam = "Вы ответили на все вопросы. Хотите начать экзамен?"
 
     const val yes = "Да"
@@ -28,6 +30,16 @@ object SystemMessages {
     const val no = "Нет"
 
     const val notRegistered = "Вы не зарегистрированны в системе"
+
+    const val quizText = "Choose right translation of the next word"
+
+    const val startQuizHelpMsg = "Чтобы начать викторину введите /start."
+
+    const val startQuizMsg = "Начинаем викторину!"
+
+    const val userNotFound = "Пользователь не найден."
+
+    const val unexpectedError = "Упс! что-то пошло не так..."
 
     fun nextTestNotifyMessage(timeInMillis: Long): String {
         val min = timeInMillis / 1000 / 60

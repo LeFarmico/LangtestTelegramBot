@@ -1,26 +1,20 @@
 package repository
 
-import dataSource.UserDataSource
 import dataSource.WordsDataSource
 import entity.WordData
 
 class WordsRepositoryImpl(
-    private val wordsDataSource: WordsDataSource,
-    private val userDataSource: UserDataSource
+    private val wordsDataSource: WordsDataSource
 ) : WordsRepository {
-    
-    override suspend fun getUnansweredWordsCategoryByChatId(chatId: Long, count: Int?): List<WordData>? {
-        return when (val wordsInTest = userDataSource.getUserByChatId(chatId)?.wordsInTest) {
-            null -> null
-            else -> wordsDataSource.getUnansweredWords(chatId).shuffled().take(wordsInTest)
-        }
+    override suspend fun getWordsByCategory(categoryId: Long): List<WordData> {
+        return wordsDataSource.getWords(categoryId)
     }
 
-    override suspend fun createWordsCategoryByChatId(chatId: Long, categoryId: Long): Boolean {
-        return wordsDataSource.createWordsForUser(chatId, categoryId)
+    override suspend fun getWordsById(wordIdList: List<Long>): List<WordData> {
+        return wordsDataSource.getWordsById(wordIdList)
     }
 
-    override suspend fun addCorrectAnswer(wordId: Long, chatId: Long): Boolean {
-        return wordsDataSource.addCorrectAnswer(chatId, wordId)
+    override suspend fun getWordById(wordId: Long): WordData? {
+        return wordsDataSource.getWordById(wordId)
     }
 }

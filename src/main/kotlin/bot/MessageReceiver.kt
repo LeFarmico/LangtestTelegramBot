@@ -54,14 +54,6 @@ class MessageReceiver(private val commandManager: ICommandManager) : IMessageRec
         MessageHandler(update).handle {
             commandManager.commandAction(it)
         }
-//        if (checkForCallback(update)) {
-//
-//        } else {
-//            MessageHandler(update).handle {
-//                // TODO handle result
-//            }
-//        }
-//        controller.schedule(chatId, messageType)
     }
 
     private fun checkForCallback(update: Update): Boolean {
