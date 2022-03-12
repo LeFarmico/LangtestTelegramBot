@@ -2,11 +2,11 @@ package ability
 
 import ability.langTestAbility.AbilityCommand
 
-interface IAbility {
+interface IAbility<T : AbilityCommand> {
 
     fun subscribe(chatId: Long)
 
-    fun commandAction(data: AbilityCommand? = null)
+    fun commandAction(data: T)
     
     fun unsubscribe(chatId: Long)
 }

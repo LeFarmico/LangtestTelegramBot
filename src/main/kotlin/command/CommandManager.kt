@@ -4,6 +4,7 @@ import ability.IAbility
 import ability.IAbilityManager
 import ability.langTestAbility.AbilityCommand
 import ability.langTestAbility.LangTestAbility
+import ability.langTestAbility.LangTestCommand
 import bot.IMessageSender
 import entity.Empty
 import entity.UserMessage
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import repository.UserRepository
 import res.SystemMessages
+import state.DataState
 
 class CommandManager(
     private val abilityManager: IAbilityManager,
@@ -29,34 +31,34 @@ class CommandManager(
         val chatId = commandRequestData.chatId
         val messageId = commandRequestData.messageId
         when (val command = commandRequestData.command) {
-            Command.BeginTest -> langTestAbility?.subscribe(chatId)
-            Command.Help -> sendMessage(
+            Command.HelpCommand -> sendMessage(
                 chatId,
                 MessageBuilder.setChatId(chatId)
                     .enableMarkdown(true)
                     .setText(SystemMessages.helpMsg)
                     .build()
             )
-            Command.Start -> sendMessage(
-                chatId,
-                MessageBuilder.setChatId(chatId)
-                    .enableMarkdown(true)
-                    .setText(SystemMessages.startMsg)
-                    .build()
-            )
             Command.NotForMe -> messageSender.send(Empty)
-            Command.TimeToNextTest -> CoroutineScope(Dispatchers.Default).launch {
+            Command.TimeToNextTestCommand -> CoroutineScope(Dispatchers.Default).launch {
                 sendTimeToNextTest(chatId)
             }
             Command.None -> messageSender.send(Empty)
-            is Command.Answer -> langTestAbility?.commandAction(AbilityCommand(chatId, messageId, command))
-            is Command.Exam -> langTestAbility?.commandAction(AbilityCommand(chatId, messageId, command))
-            is Command.SetCategory -> langTestAbility?.commandAction(AbilityCommand(chatId, messageId, command))
-            is Command.SetLanguage -> langTestAbility?.commandAction(AbilityCommand(chatId, messageId, command))
+
+            Command.StartCommand -> langTestAbility?.subscribe(chatId)
+            Command.StopCommand -> langTestAbility?.unsubscribe(chatId)
+
+            is Command.StartQuizCallback -> langTestAbility?.commandAction(LangTestCommand(chatId, messageId, command))
+            is Command.CorrectAnswerCallback -> langTestAbility?.commandAction(LangTestCommand(chatId, messageId, command))
+            is Command.AskExamCallback -> langTestAbility?.commandAction(LangTestCommand(chatId, messageId, command))
+            is Command.SetCategoryCallback -> langTestAbility?.commandAction(LangTestCommand(chatId, messageId, command))
+            is Command.SetLanguageCallBack -> langTestAbility?.commandAction(LangTestCommand(chatId, messageId, command))
+            Command.SetLanguageCommand -> TODO()
+            is Command.IncorrectAnswerCallback -> langTestAbility?.commandAction(LangTestCommand(chatId, messageId, command))
+            Command.ContinueQuiz -> langTestAbility?.commandAction(LangTestCommand(chatId, messageId, command))
         }
     }
 
-    private fun <T : IAbility> getAbility(abilityClass: Class<out T>): T? {
+    private fun <T : IAbility<out AbilityCommand>> getAbility(abilityClass: Class<out T>): T? {
         return try {
             abilityManager.getAbility(abilityClass)
         } catch (e: NullPointerException) {
@@ -71,12 +73,17 @@ class CommandManager(
 
     private suspend fun sendTimeToNextTest(chatId: Long) {
         try {
-            val user = userRepo.getUserByChatId(chatId)!!
-            val text = SystemMessages.nextTestNotifyMessage(user.breakTimeInMillis)
-            val msg = MessageBuilder.setChatId(chatId)
-                .setText(text)
-                .build()
-            messageSender.send(UserMessage(chatId, msg))
+            when (val user = userRepo.getUserByChatId(chatId)) {
+                DataState.Empty -> TODO()
+                is DataState.Failure -> TODO()
+                is DataState.Success -> {
+                    val text = SystemMessages.nextTestNotifyMessage(user.data.breakTimeInMillis)
+                    val msg = MessageBuilder.setChatId(chatId)
+                        .setText(text)
+                        .build()
+                    messageSender.send(UserMessage(chatId, msg))
+                }
+            }
         } catch (e: NullPointerException) {
             val msg = MessageBuilder.setChatId(chatId)
                 .setText(SystemMessages.notRegistered)

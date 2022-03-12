@@ -1,14 +1,17 @@
 package repository
 
+import dataSource.WordsDataSource
 import entity.Category
 
-class CategoryRepositoryImpl : CategoryRepository {
+class CategoryRepositoryImpl(
+    private val wordsDataSource: WordsDataSource
+) : CategoryRepository {
 
-    override suspend fun getCategories(): List<Category> {
-        return listOf(
-            Category(1, "default"),
-            Category(2, "shop"),
-            Category(3, "travel")
-        )
+    override suspend fun getCategoriesByLanguage(languageId: Long): List<Category> {
+        return wordsDataSource.getCategories(languageId)
+    }
+
+    override suspend fun getCategory(categoryId: Long): Category? {
+        return wordsDataSource.getCategory(categoryId)
     }
 }

@@ -1,12 +1,16 @@
 package repository
 
-interface UserWordRepository {
-    
-    suspend fun addWordsForUser(chatId: Long, wordIdList: List<Long>): Boolean
-    
-    suspend fun getWordIdsForUser(chatId: Long, wordsLimit: Int): List<Long>
+import entity.QuizTest
+import entity.QuizWord
+import state.DataState
 
-    suspend fun getWordIdsForUser(chatId: Long): List<Long>
+interface QuizRepository {
+
+    suspend fun getQuizTest(chatId: Long): DataState<QuizTest>
+
+    suspend fun getQuizWord(chatId: Long): DataState<QuizWord>
+
+    suspend fun addQuizWords(chatId: Long): Boolean
 
     suspend fun removeWordForUser(chatId: Long, wordId: Long): Boolean
 

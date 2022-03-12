@@ -1,4 +1,3 @@
 package entity
 
-class uizWord {
-}
+data class QuizWord(val id: Long, val wordId: Long, val chatId: Long)

@@ -5,7 +5,7 @@ import entity.WordData
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class LangTestUserStatus(private val user: User) {
+class LangTestUserStatus(val user: User) {
 
     private val wordQueue: Queue<WordData> = ConcurrentLinkedQueue()
 
@@ -26,6 +26,8 @@ class LangTestUserStatus(private val user: User) {
         status = UserStatus.WAITING_FOR_ANSWER
         return createTest(word)
     }
+
+    fun getCurrentWordData(): WordData? = currentWord
 
     private fun createTest(wordData: WordData?): TestData? {
         return try {

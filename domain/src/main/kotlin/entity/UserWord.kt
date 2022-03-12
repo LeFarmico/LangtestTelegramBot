@@ -1,3 +1,3 @@
 package entity
 
-data class UserWord()
+data class UserWord(val chatId: Long, val wordId: Long)
