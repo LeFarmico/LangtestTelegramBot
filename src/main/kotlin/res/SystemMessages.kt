@@ -31,7 +31,7 @@ object SystemMessages {
 
     const val notRegistered = "Вы не зарегистрированны в системе"
 
-    const val quizText = "Choose right translation of the next word"
+    const val quizText = "Выберите правильный перевод слова:"
 
     const val startQuizHelpMsg = "Чтобы начать викторину введите /start."
 
