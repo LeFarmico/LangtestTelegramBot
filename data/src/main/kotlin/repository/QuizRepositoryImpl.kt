@@ -8,7 +8,6 @@ import entity.QuizWord
 import state.DataState
 
 class QuizRepositoryImpl(
-//    private val userWordsDataSource: UserWordsDataSource,
     private val userDataSource: UserDataSource,
     private val quizWordsDataSource: QuizWordsDataSource,
     private val wordsDataSource: WordsDataSource
