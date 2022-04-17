@@ -1,36 +1,41 @@
 package command
 
+import data.IRequestData
+import data.RequestData
 import org.telegram.telegrambots.meta.api.objects.Update
 import res.Params
+import utils.*
 
-class UpdateParser(private val update: Update) {
+class UpdateParser() {
 
-    fun parse(): Command {
-        return if (update.message != null) {
-            toCommand(update.message.text)
-        } else if (update.callbackQuery.message != null) {
-            CallbackParser(update.callbackQuery.data).toCommand()
-        } else {
-            Command.None
-        }
+    fun parse(update: Update): IRequestData {
+        return RequestData.builder()
+            .chatId(update.getChatId)
+            .messageId(update.getMessageId)
+            .userId(update.getUserId)
+            .firstName(update.getFirstName)
+            .lastName(update.getLastName)
+            .userName(update.getUserName)
+            .command(toCommand(update.getText))
+            .build()
     }
 
     private fun toCommand(text: String): Command {
 
         val trimText = text.trim()
-
         if (trimText.isEmpty()) return Command.None
 
         val commandAndText = getDelimitedCommand(trimText)
-        if (isCommand(commandAndText.first)) {
-            return if (isCommandForBot(commandAndText.first, Params.botName)) {
+        return if (isCommand(commandAndText.first)) {
+            if (isCommandForBot(commandAndText.first, Params.botName)) {
                 val commandText = cutCommandFromText(commandAndText.first)
                 getCommandFromText(commandText, commandAndText.second)
             } else {
                 Command.NotForMe
             }
+        } else {
+            Command.getCommand(commandAndText.first, commandAndText.second ?: "")
         }
-        return Command.None
     }
 
     private fun getDelimitedCommand(commandText: String): Pair<String, String> {
@@ -40,7 +45,10 @@ class UpdateParser(private val update: Update) {
         takeIf { trimmedCommand.contains(" ") }
             ?.run {
                 val spaceIndex = trimmedCommand.indexOf(" ")
-                delimitedCommand = Pair(trimmedCommand.substring(0, spaceIndex), trimmedCommand.substring(spaceIndex + 1))
+                delimitedCommand = Pair(
+                    trimmedCommand.substring(0, spaceIndex),
+                    trimmedCommand.substring(spaceIndex + 1)
+                )
             }
         return delimitedCommand
     }

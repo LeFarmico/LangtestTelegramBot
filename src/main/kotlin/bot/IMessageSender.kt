@@ -1,8 +1,8 @@
 package bot
 
-import entity.SendData
+import data.IResponseData
 
 interface IMessageSender {
 
-    fun send(sendData: SendData)
+    fun send(responseData: IResponseData)
 }

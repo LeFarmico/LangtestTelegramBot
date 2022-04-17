@@ -1,17 +1,19 @@
 package bot
 
-import command.ICommandManager
 import bot.handler.MessageHandler
+import command.UpdateParser
 import kotlinx.coroutines.delay
 import org.slf4j.LoggerFactory
 import org.telegram.telegrambots.meta.api.objects.Update
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class MessageReceiver(private val commandManager: ICommandManager) : IMessageReceiver {
+class MessageReceiver(private val messageSender: MessageSender) : IMessageReceiver {
 
     private val receiveQueue: Queue<Update> = ConcurrentLinkedQueue()
     private val log = LoggerFactory.getLogger(this::class.java)
+    private val updateParser = UpdateParser()
+    private val messageHandler = MessageHandler(messageSender)
     var isRunning = true
 
     override suspend fun start() {
@@ -51,12 +53,7 @@ class MessageReceiver(private val commandManager: ICommandManager) : IMessageRec
 
     private fun receive(update: Update) {
         log.info("Handle receiver: $update")
-        MessageHandler(update).handle {
-            commandManager.commandAction(it)
-        }
-    }
-
-    private fun checkForCallback(update: Update): Boolean {
-        return update.callbackQuery != null
+        val requestData = updateParser.parse(update)
+        messageHandler.handleRequest(requestData)
     }
 }
