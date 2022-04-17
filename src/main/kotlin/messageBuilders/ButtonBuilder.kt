@@ -10,9 +10,13 @@ class ButtonBuilder private constructor(private val buttonList: List<InlineKeybo
             this.text = text
             this.callbackData = callback
         }
-        val newButtonList = mutableListOf<InlineKeyboardButton>(button)
+        val newButtonList = mutableListOf(button)
         newButtonList.addAll(buttonList)
         return ButtonBuilder(newButtonList)
+    }
+
+    fun setButtons(buttonList: List<InlineKeyboardButton>): ButtonBuilder {
+        return ButtonBuilder(buttonList)
     }
 
     fun build(isVertical: Boolean = false, shuffled: Boolean = false): InlineKeyboardMarkup {

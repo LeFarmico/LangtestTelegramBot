@@ -1,10 +1,6 @@
 package bot
 
-import ability.AbilityManager
-import ability.IAbilityManager
-import ability.langTestAbility.LangTestAbility
-import command.CommandManager
-import entity.*
+import data.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -22,9 +18,7 @@ class Bot(
 ) : TimedSendLongPollingBot(), IBot {
 
     private val messageSender = MessageSender(this)
-    override val abilityManager: IAbilityManager = AbilityManager()
-    private val commandManager = CommandManager(abilityManager, messageSender)
-    private val messageReceiver = MessageReceiver(commandManager)
+    private val messageReceiver = MessageReceiver(messageSender)
     private val log = LoggerFactory.getLogger(this::class.java)
 
     override fun getBotToken(): String = botToken
@@ -48,7 +42,6 @@ class Bot(
         try {
             telegramBotsApi.registerBot(this)
             log.info("[STARTED] Telegram bot connected. Looking for messages")
-            abilityManager.addAbility(LangTestAbility::class.java, LangTestAbility(messageSender))
         } catch (e: TelegramApiRequestException) {
             log.warn("Can't connect. Pause for ${RECONNECT_PAUSE / 100} sec. \n Error: ${e.message}")
 
@@ -64,15 +57,15 @@ class Bot(
     }
 
     override fun sendMessageCallback(chatId: Long?, request: Any?) {
-        if (request !is SendData) {
+        if (request !is IResponseData) {
             log.error("Execute error. Illegal type of message: ${request!!.javaClass.simpleName}", IllegalArgumentException())
             return
         }
         when (request) {
             is EditUserMessage -> execute(request.message)
-            Empty -> { log.info("[INFO] request is not identified: ${request.javaClass}") }
+            Empty -> { }
+            is DeleteUserMessage -> execute(request.message)
             is UserMessage -> execute(request.message)
-            is DeleteUserMessage -> execute(request.deleteMessage)
         }
     }
 

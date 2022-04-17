@@ -12,4 +12,7 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(project(":domain"))
+
+//    OkHttpClient
+    implementation("com.squareup.okhttp:okhttp:2.7.5")
 }
