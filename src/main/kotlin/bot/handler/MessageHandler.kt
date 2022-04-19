@@ -1,8 +1,9 @@
 package bot.handler
 
-import ability.langTestAbility.LangTestController
+import controller.LangTestController
 import bot.MessageSender
 import command.Command
+import controller.DefaultController
 import data.IRequestData
 import data.IResponseData
 import org.slf4j.LoggerFactory
@@ -13,6 +14,7 @@ class MessageHandler(
 ) : IHandlerReceiver {
 
     private val langTestController = LangTestController(this)
+    private val defaultController = DefaultController(this)
     private val botName = Params.botName
     
     private val log = LoggerFactory.getLogger(this::class.java)
@@ -22,7 +24,7 @@ class MessageHandler(
         when (requestData.command) {
             Command.None -> {}
             Command.NotForMe -> {}
-            Command.HelpCommand -> {}
+            Command.HelpCommand -> defaultController.commandAction(requestData)
             
             else -> langTestController.commandAction(requestData)
         }

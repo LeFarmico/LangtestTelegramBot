@@ -1,14 +1,14 @@
-package ability.langTestAbility
+package controller
 
-import ability.IController
 import bot.handler.IHandlerReceiver
 import command.Command
 import data.IRequestData
 import data.ResponseFactory
-import entity.QuizTest
-import inject.DataInjector
+import entity.QuizWord
+import inject.DependencyInjection
 import kotlinx.coroutines.*
 import messageBuilders.*
+import org.koin.java.KoinJavaComponent.inject
 import org.slf4j.LoggerFactory
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import repository.*
@@ -16,16 +16,16 @@ import res.SystemMessages
 import state.DataState
 import java.util.*
 
-class LangTestController(private val responseReceiver: IHandlerReceiver) : IController {
+class LangTestController(override val responseReceiver: IHandlerReceiver) : IController {
 
     private val log = LoggerFactory.getLogger(javaClass.simpleName)
 
     private val timer by lazy { Timer(true) }
 
-    private val userRepo: UserRepository = DataInjector.userRepo
-    private val quizRepository: QuizRepository = DataInjector.quizRepository
-    private val categoryRepository: CategoryRepository = DataInjector.categoryRepository
-    private val languageRepository: LanguageRepository = DataInjector.languageRepository
+    val userRepo: UserRepository by inject(UserRepository::class.java)
+    private val quizRepository: QuizRepository by inject(QuizRepository::class.java)
+    private val categoryRepository: CategoryRepository by inject(CategoryRepository::class.java)
+    private val languageRepository: LanguageRepository by inject(LanguageRepository::class.java)
 
     override fun commandAction(requestData: IRequestData) {
         CoroutineScope(Dispatchers.Default).launch {
@@ -61,6 +61,7 @@ class LangTestController(private val responseReceiver: IHandlerReceiver) : ICont
                 
                 is Command.SetCategoryCallback -> {
                     registerUser(
+                        clientId = requestData.userId,
                         chatId = requestData.chatId,
                         messageId = requestData.messageId,
                         categoryId = command.categoryId
@@ -105,9 +106,10 @@ class LangTestController(private val responseReceiver: IHandlerReceiver) : ICont
         askForLanguage(chatId)
     }
 
-    private suspend fun registerUser(chatId: Long, messageId: Int, categoryId: Long) {
+    private suspend fun registerUser(clientId: String, chatId: Long, messageId: Int, categoryId: Long) {
         val category = categoryRepository.getCategory(categoryId)!! // TODO Handle error through DataState in domain
-        userRepo.addUser(
+        userRepo.addClient(
+            clientId = clientId,
             chatId = chatId,
             categoryId = categoryId,
             languageId = category.languageId
@@ -147,7 +149,7 @@ class LangTestController(private val responseReceiver: IHandlerReceiver) : ICont
     }
 
     private suspend fun askForStartQuiz(chatId: Long) {
-        when (val quiz = quizRepository.getQuizTest(chatId)) {
+        when (val quiz = quizRepository.getNextQuizWord(chatId)) {
             DataState.Empty -> {
                 sendCurrentUserSettings(chatId)
                 val response = ResponseFactory.builder(chatId)
@@ -214,7 +216,7 @@ class LangTestController(private val responseReceiver: IHandlerReceiver) : ICont
     private suspend fun handleAnswerCallback(chatId: Long, messageId: Int, wordId: Long, isCorrect: Boolean) {
         when (isCorrect) {
             true -> { 
-                quizRepository.removeWordForUser(chatId, wordId)
+                quizRepository.setAnswerForQuizWord(chatId, wordId, true)
                 val response = ResponseFactory.builder(chatId)
                     .editCurrent(messageId)
                     .message(SystemMessages.rightAnswer)
@@ -236,7 +238,7 @@ class LangTestController(private val responseReceiver: IHandlerReceiver) : ICont
     private suspend fun handleStartCallback(chatId: Long, messageId: Int, start: Boolean) {
         when (start) {
             true -> {
-                quizRepository.addQuizWords(chatId)
+                quizRepository.createQuizWords(chatId)
                 val response = ResponseFactory.builder(chatId)
                     .editCurrent(messageId)
                     .message(SystemMessages.startQuizMsg)
@@ -255,7 +257,7 @@ class LangTestController(private val responseReceiver: IHandlerReceiver) : ICont
     }
 
     private suspend fun trySendNexQuizWord(chatId: Long) {
-        when (val quizTest = quizRepository.getQuizTest(chatId)) {
+        when (val quizTest = quizRepository.getNextQuizWord(chatId)) {
             DataState.Empty -> endQuiz(chatId)
             is DataState.Success -> sendQuizTest(chatId, quizTest.data)
             is DataState.Failure -> {
@@ -284,12 +286,12 @@ class LangTestController(private val responseReceiver: IHandlerReceiver) : ICont
         }
     }
 
-    private fun sendQuizTest(chatId: Long, quizTest: QuizTest) {
+    private fun sendQuizTest(chatId: Long, quizWord: QuizWord) {
         try {
-            val message = TestMessageBuilder.setChatId(chatId, quizTest.wordId)
-                .setQuizText(SystemMessages.quizText, quizTest.wordToTranslate)
-                .addIncorrectButtonList(quizTest.incorrectAnswers)
-                .addCorrectButton(quizTest.correctAnswer)
+            val message = TestMessageBuilder.setChatId(chatId, quizWord.wordId)
+                .setQuizText(SystemMessages.quizText, quizWord.wordToTranslate)
+                .addIncorrectButtonList(quizWord.incorrectAnswers)
+                .addCorrectButton(quizWord.correctAnswer)
                 .build()
             val response = ResponseFactory.builder(chatId)
                 .buildSendMessageObject(message)

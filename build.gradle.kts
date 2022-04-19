@@ -13,6 +13,8 @@ repositories {
 }
 
 dependencies {
+    implementation("io.insert-koin:koin-core:3.1.6")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
     testImplementation(kotlin("test"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
 
