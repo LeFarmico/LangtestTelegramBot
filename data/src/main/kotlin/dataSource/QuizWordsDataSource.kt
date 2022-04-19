@@ -1,54 +1,54 @@
 package dataSource
 
-import entity.QuizWord
+import entity.QuizWordInfo
 
 class QuizWordsDataSource {
 
     private val lock = Any()
-    private val quizWords = mutableListOf<QuizWord>()
+    private val quizWordInfos = mutableListOf<QuizWordInfo>()
     private var id: Long = 1
 
     fun addQuizWords(chatId: Long, wordIdList: List<Long>) {
         synchronized(lock) {
             wordIdList.forEach { wordId ->
-                val quizWord = QuizWord(
+                val quizWordInfo = QuizWordInfo(
                     id = this.id++,
                     wordId = wordId,
                     chatId = chatId
                 )
-                quizWords.add(quizWord)
+                quizWordInfos.add(quizWordInfo)
             }
         }
     }
 
     fun deleteQuizWord(chatId: Long, wordId: Long): Boolean {
         synchronized(lock) {
-            return quizWords.removeIf { quizWord ->
+            return quizWordInfos.removeIf { quizWord ->
                 quizWord.chatId == chatId && quizWord.wordId == wordId
             }
         }
     }
 
-    fun getQuizWords(chatId: Long): List<QuizWord> {
+    fun getQuizWords(chatId: Long): List<QuizWordInfo> {
         synchronized(lock) {
-            return quizWords.filter { it.chatId == chatId }
+            return quizWordInfos.filter { it.chatId == chatId }
         }
     }
 
-    fun getQuizWord(chatId: Long): QuizWord? {
+    fun getQuizWord(chatId: Long): QuizWordInfo? {
         synchronized(lock) {
             return try {
-                val index = quizWords.indexOfFirst { it.chatId == chatId }
-                quizWords[index]
+                val index = quizWordInfos.indexOfFirst { it.chatId == chatId }
+                quizWordInfos[index]
             } catch (e: IndexOutOfBoundsException) {
                 null
             }
         }
     }
 
-    fun getQuizWordsLimited(chatId: Long, limit: Int): List<QuizWord> {
+    fun getQuizWordsLimited(chatId: Long, limit: Int): List<QuizWordInfo> {
         synchronized(lock) {
-            return quizWords.filter { it.chatId == chatId }.shuffled().take(limit)
+            return quizWordInfos.filter { it.chatId == chatId }.shuffled().take(limit)
         }
     }
 }

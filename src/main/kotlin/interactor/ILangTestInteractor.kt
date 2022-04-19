@@ -1,34 +1,37 @@
 package interactor
 
+import entity.*
+import state.DataState
+
 interface ILangTestInteractor {
 
-    fun registerUser(
-        userId: String,
+    suspend fun registerUser(
+        clientId: String,
+        chatId: Long,
+        languageId: Long,
+        categoryId: Long,
+        breakTimeInMillis: Long,
+        wordsLimit: Int
+    ): DataState<QuizData>
+
+    suspend fun deleteUser(chatId: Long): Boolean
+
+    suspend fun getClientData(chatId: Long): DataState<QuizData>
+
+    suspend fun updateClientData(
+        clientId: String,
         chatId: Long,
         languageId: Long,
         categoryId: Long,
         nextQuizTime: Long,
         wordsInTest: Int
-    )
+    ): DataState<QuizData>
 
-    fun deleteUser(clientId: Long)
+    suspend fun getNextWordOrScheduleQuiz(chatId: Long): DataState<QuizWord>
 
-    fun getClientData(clientId: Long)
+    suspend fun setAnswerForQuiz(chatId: Long, quizWordId: Long, answer: Boolean): DataState<QuizStats>
 
-    fun updateClientData(
-        userId: String,
-        chatId: Long,
-        languageId: Long,
-        categoryId: Long,
-        nextQuizTime: Long,
-        wordsInTest: Int
-    )
+    suspend fun resetQuiz(chatId: Long): Boolean
 
-    fun getNextWordOrScheduleQuiz(userId: String)
-
-    fun setAnswerForQuiz(userId: String, quizWordId: Long, answer: Boolean)
-
-    fun resetQuiz(userId: String)
-
-    fun createQuizForUser(userId: String)
+    suspend fun createQuizForUser(chatId: Long): Boolean
 }

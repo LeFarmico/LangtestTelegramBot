@@ -1,16 +1,16 @@
 package repository
 
-import entity.QuizTest
+import entity.QuizStats
 import entity.QuizWord
 import state.DataState
 
 interface QuizRepository {
 
-    suspend fun getQuizTest(chatId: Long): DataState<QuizTest>
+    suspend fun getNextQuizWord(chatId: Long): DataState<QuizWord>
 
-    suspend fun getQuizWord(chatId: Long): DataState<QuizWord>
+    suspend fun createQuizWords(chatId: Long): Boolean
 
-    suspend fun addQuizWords(chatId: Long): Boolean
+    suspend fun setAnswerForQuizWord(chatId: Long, wordId: Long, answer: Boolean): DataState<QuizStats>
 
-    suspend fun removeWordForUser(chatId: Long, wordId: Long): Boolean
+    suspend fun resetQuiz(chatId: Long): Boolean
 }

@@ -1,11 +1,11 @@
 package ability.langTestAbility
 
-import entity.User
+import entity.QuizData
 import entity.WordData
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class LangTestUserStatus(val user: User) {
+class LangTestUserStatus(val quizData: QuizData) {
 
     private val wordQueue: Queue<WordData> = ConcurrentLinkedQueue()
 
