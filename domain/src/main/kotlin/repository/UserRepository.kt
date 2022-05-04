@@ -5,8 +5,7 @@ import state.DataState
 
 interface UserRepository {
     
-    suspend fun addClient(
-        clientId: String,
+    suspend fun addUser(
         chatId: Long,
         languageId: Long,
         categoryId: Long,
@@ -24,10 +23,9 @@ interface UserRepository {
 
     suspend fun setLanguageByChatId(chatId: Long, languageId: Long): Boolean
 
-    suspend fun setWordsInTestByChatId(chatId: Long, languageId: Long): Boolean
+    suspend fun setWordsInTestByChatId(chatId: Long, wordsInTest: Int): Boolean
 
     suspend fun updateUser(
-        clientId: String,
         chatId: Long,
         languageId: Long,
         categoryId: Long,

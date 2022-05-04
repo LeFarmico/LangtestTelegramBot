@@ -5,7 +5,6 @@ import command.Command
 import data.IRequestData
 import data.ResponseFactory
 import entity.QuizWord
-import inject.DependencyInjection
 import kotlinx.coroutines.*
 import messageBuilders.*
 import org.koin.java.KoinJavaComponent.inject
@@ -61,7 +60,6 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
                 
                 is Command.SetCategoryCallback -> {
                     registerUser(
-                        clientId = requestData.userId,
                         chatId = requestData.chatId,
                         messageId = requestData.messageId,
                         categoryId = command.categoryId
@@ -106,20 +104,36 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
         askForLanguage(chatId)
     }
 
-    private suspend fun registerUser(clientId: String, chatId: Long, messageId: Int, categoryId: Long) {
-        val category = categoryRepository.getCategory(categoryId)!! // TODO Handle error through DataState in domain
-        userRepo.addClient(
-            clientId = clientId,
-            chatId = chatId,
-            categoryId = categoryId,
-            languageId = category.languageId
-        )
-        val response = ResponseFactory.builder(chatId)
-            .editCurrent(messageId)
-            .message(SystemMessages.categoryChooseMessage(category.categoryName))
-            .build()
-        responseReceiver.receiveData(response)
-        askForStartQuiz(chatId)
+    private suspend fun registerUser(chatId: Long, messageId: Int, categoryId: Long) {
+        when (val category = categoryRepository.getCategory(categoryId)) { // TODO Handle error through DataState in domain
+            DataState.Empty -> {
+                val response = ResponseFactory.builder(chatId)
+                    .message("Category is not found")
+                    .build()
+                responseReceiver.receiveData(response)
+            }
+            is DataState.Failure -> {
+                val response = ResponseFactory.builder(chatId)
+                    .message("Unexpected error, please try again")
+                    .build()
+                responseReceiver.receiveData(response)
+            }
+            is DataState.Success -> {
+                val userData = userRepo.addUser(
+                    chatId = chatId,
+                    categoryId = categoryId,
+                    languageId = category.data.languageId
+                )
+                if (userData is DataState.Success) {
+                    val response = ResponseFactory.builder(chatId)
+                        .editCurrent(messageId)
+                        .message(SystemMessages.categoryChooseMessage(category.data.categoryName))
+                        .build()
+                    responseReceiver.receiveData(response)
+                    askForStartQuiz(chatId)
+                }
+            }
+        }
     }
 
     private suspend fun sendTimeToNextQuiz(chatId: Long) {
@@ -195,15 +209,21 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
             }
             is DataState.Success -> {
                 try {
-                    val category = categoryRepository.getCategory(user.data.categoryId)!!
-                    val language = languageRepository.getLanguageById(user.data.languageId)!!
-                    val message = SystemMessages.userSettingsMessage(language.languageName, category.categoryName)
+                    val category = categoryRepository.getCategory(user.data.categoryId) as DataState.Success
+                    val language = languageRepository.getLanguageById(user.data.languageId) as DataState.Success
+                    val message = SystemMessages.userSettingsMessage(language.data.languageName, category.data.categoryName)
                     val response = ResponseFactory.builder(chatId)
                         .message(message)
                         .build()
                     responseReceiver.receiveData(response)
                 } catch (e: NullPointerException) {
                     log.error("[ERROR] Category or message not found", e)
+                    val response = ResponseFactory.builder(chatId)
+                        .message(SystemMessages.unexpectedError)
+                        .build()
+                    responseReceiver.receiveData(response)
+                } catch (e: TypeCastException) {
+                    log.error("[ERROR] response is not correct", e)
                     val response = ResponseFactory.builder(chatId)
                         .message(SystemMessages.unexpectedError)
                         .build()
@@ -271,13 +291,22 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
     }
     
     private suspend fun handleSetLanguageCallback(chatId: Long, messageId: Int, languageId: Long) {
-        val language = languageRepository.getLanguageById(languageId)!!
-        val response = ResponseFactory.builder(chatId)
-            .editCurrent(messageId)
-            .message(SystemMessages.languageChooseMessage(language.languageName))
-            .build()
-        responseReceiver.receiveData(response)
-        askForCategory(chatId, languageId)
+        try {
+            val language = languageRepository.getLanguageById(languageId) as DataState.Success
+            val response = ResponseFactory.builder(chatId)
+                .editCurrent(messageId)
+                .message(SystemMessages.languageChooseMessage(language.data.languageName))
+                .build()
+            responseReceiver.receiveData(response)
+            askForCategory(chatId, languageId)
+        } catch (e: TypeCastException) {
+            val response = ResponseFactory.builder(chatId)
+                .editCurrent(messageId)
+                .message(SystemMessages.notFoundLanguage)
+                .build()
+            responseReceiver.receiveData(response)
+            askForLanguage(chatId)
+        }
     }
 
     private fun endQuiz(chatId: Long) {
@@ -288,10 +317,10 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
 
     private fun sendQuizTest(chatId: Long, quizWord: QuizWord) {
         try {
-            val message = TestMessageBuilder.setChatId(chatId, quizWord.wordId)
-                .setQuizText(SystemMessages.quizText, quizWord.wordToTranslate)
-                .addIncorrectButtonList(quizWord.incorrectAnswers)
-                .addCorrectButton(quizWord.correctAnswer)
+            val message = TestMessageBuilder.setChatId(chatId, quizWord.id)
+                .setQuizText(SystemMessages.quizText, quizWord.originalWord)
+                .addIncorrectButtonList(quizWord.wrongTranslations)
+                .addCorrectButton(quizWord.correctTranslation)
                 .build()
             val response = ResponseFactory.builder(chatId)
                 .buildSendMessageObject(message)
@@ -303,41 +332,57 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
     }
 
     private suspend fun askForLanguage(chatId: Long) {
-        val langList = languageRepository.getAvailableLanguages()
-        val response = ResponseFactory.builder(chatId)
-            .message(SystemMessages.chooseLanguage)
-            .setButtons {
-                val buttonList = mutableListOf<InlineKeyboardButton>()
-                for (i in langList.indices) {
-                    buttonList.add(
-                        InlineKeyboardButton().apply {
-                            this.text = langList[i].languageName
-                            this.callbackData = Command.SetLanguageCallBack.buildCallBackQuery(langList[i].id)
-                        }
-                    )
-                }
-                buttonList
-            }.build()
-        responseReceiver.receiveData(response)
+        try {
+            val langList = languageRepository.getAvailableLanguages() as DataState.Success
+            val response = ResponseFactory.builder(chatId)
+                .message(SystemMessages.chooseLanguage)
+                .setButtons {
+                    val buttonList = mutableListOf<InlineKeyboardButton>()
+                    for (i in langList.data.indices) {
+                        buttonList.add(
+                            InlineKeyboardButton().apply {
+                                this.text = langList.data[i].languageName
+                                this.callbackData = Command.SetLanguageCallBack.buildCallBackQuery(langList.data[i].id)
+                            }
+                        )
+                    }
+                    buttonList
+                }.build()
+            responseReceiver.receiveData(response)
+        } catch (e: java.lang.ClassCastException) {
+            log.error("[ERROR] invalid response", e)
+            val response = ResponseFactory.builder(chatId)
+                .message("Что-то пошло не так")
+                .build()
+            responseReceiver.receiveData(response)
+        }
     }
 
     private suspend fun askForCategory(chatId: Long, languageId: Long) {
-        val categoryList = categoryRepository.getCategoriesByLanguage(languageId)
-        val response = ResponseFactory.builder(chatId)
-            .message(SystemMessages.chooseCategory)
-            .setButtons {
-                val buttonList = mutableListOf<InlineKeyboardButton>()
-                for (i in categoryList.indices) {
-                    buttonList.add(
-                        InlineKeyboardButton().apply {
-                            this.text = categoryList[i].categoryName
-                            this.callbackData = Command.SetCategoryCallback.buildCallBackQuery(categoryList[i].id)
-                        }
-                    )
-                }
-                buttonList
-            }.build()
-        responseReceiver.receiveData(response)
+        try {
+            val categoryList = categoryRepository.getCategoriesByLanguage(languageId) as DataState.Success
+            val response = ResponseFactory.builder(chatId)
+                .message(SystemMessages.chooseCategory)
+                .setButtons {
+                    val buttonList = mutableListOf<InlineKeyboardButton>()
+                    for (i in categoryList.data.indices) {
+                        buttonList.add(
+                            InlineKeyboardButton().apply {
+                                this.text = categoryList.data[i].categoryName
+                                this.callbackData = Command.SetCategoryCallback.buildCallBackQuery(categoryList.data[i].id)
+                            }
+                        )
+                    }
+                    buttonList
+                }.build()
+            responseReceiver.receiveData(response)
+        } catch (e: TypeCastException) {
+            log.error("[ERROR] invalid response", e)
+            val response = ResponseFactory.builder(chatId)
+                .message("Что-то пошло не так")
+                .build()
+            responseReceiver.receiveData(response)
+        }
     }
 
     private suspend fun askForExam(chatId: Long) {

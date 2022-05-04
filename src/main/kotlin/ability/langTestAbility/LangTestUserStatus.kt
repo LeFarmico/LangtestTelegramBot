@@ -14,7 +14,7 @@ class LangTestUserStatus(val quizData: QuizData) {
     private var answerList: List<String> = listOf()
 
     fun setWords(wordsList: List<WordData>) {
-        answerList = wordsList.map { it.translate }
+        answerList = wordsList.map { it.wordTranslation }
         wordQueue.addAll(
             wordsList.shuffled()
         )
@@ -31,8 +31,8 @@ class LangTestUserStatus(val quizData: QuizData) {
 
     private fun createTest(wordData: WordData?): TestData? {
         return try {
-            val word = wordData!!.word
-            val answer = wordData.translate
+            val word = wordData!!.wordOriginal
+            val answer = wordData.wordTranslation
             val falseAnswers = answerList
                 .shuffled()
                 .filterNot { it == answer }

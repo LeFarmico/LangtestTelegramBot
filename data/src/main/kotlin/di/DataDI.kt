@@ -1,9 +1,8 @@
 package di
 
+import http.LangTestApi
 import http.TokenInterceptor
-import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.dsl.module
 import res.Resources
@@ -11,7 +10,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-object DI {
+object DataDI {
 
     val dataModule = module {
         single<OkHttpClient> {
@@ -22,7 +21,7 @@ object DI {
                     HttpLoggingInterceptor().apply {
                         level = HttpLoggingInterceptor.Level.HEADERS
                     }
-                ).addInterceptor(TokenInterceptor(Resources.token))
+                ).addInterceptor(TokenInterceptor())
                 .build()
         }
         single<Retrofit> {
@@ -32,5 +31,9 @@ object DI {
                 .client(get())
                 .build()
         }
+
+        single<LangTestApi> { provideAPI(get()) }
     }
+
+    private fun provideAPI(retrofit: Retrofit): LangTestApi = retrofit.create(LangTestApi::class.java)
 }

@@ -1,7 +1,10 @@
 package entity
 
+import com.google.gson.annotations.SerializedName
+
 data class QuizStats(
-    val currentWordNumber: Int,
-    val summaryWordsInTest: Int,
-    val nextQuizTime: Long?
+    @SerializedName("quiz_word_id") val quizWordId: Long,
+    @SerializedName("current_word_number") val currentWordNumber: Int,
+    @SerializedName("summary_word_count") val summaryWordsInTest: Int,
+    @SerializedName("next_quiz_time") val nextQuizTime: Long?
 )

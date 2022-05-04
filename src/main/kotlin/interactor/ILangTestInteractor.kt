@@ -6,7 +6,6 @@ import state.DataState
 interface ILangTestInteractor {
 
     suspend fun registerUser(
-        clientId: String,
         chatId: Long,
         languageId: Long,
         categoryId: Long,
@@ -19,7 +18,6 @@ interface ILangTestInteractor {
     suspend fun getClientData(chatId: Long): DataState<QuizData>
 
     suspend fun updateClientData(
-        clientId: String,
         chatId: Long,
         languageId: Long,
         categoryId: Long,
