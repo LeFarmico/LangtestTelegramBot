@@ -2,8 +2,11 @@ package http
 
 import okhttp3.Interceptor
 import okhttp3.Response
+import res.Resources
 
-class TokenInterceptor(private val token: String) : Interceptor {
+class TokenInterceptor : Interceptor {
+
+    private val token get() = Resources.token
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val original = chain.request()

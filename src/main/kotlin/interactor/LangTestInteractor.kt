@@ -13,14 +13,13 @@ class LangTestInteractor(
 ) : ILangTestInteractor {
 
     override suspend fun registerUser(
-        clientId: String,
         chatId: Long,
         languageId: Long,
         categoryId: Long,
         breakTimeInMillis: Long,
         wordsLimit: Int
     ): DataState<QuizData> {
-        return userRepository.addClient(clientId, chatId, languageId, categoryId, breakTimeInMillis, wordsLimit)
+        return userRepository.addUser(chatId, languageId, categoryId, breakTimeInMillis, wordsLimit)
     }
 
     override suspend fun deleteUser(chatId: Long): Boolean {
@@ -32,14 +31,13 @@ class LangTestInteractor(
     }
 
     override suspend fun updateClientData(
-        clientId: String,
         chatId: Long,
         languageId: Long,
         categoryId: Long,
         nextQuizTime: Long,
         wordsInTest: Int
     ): DataState<QuizData> {
-        return userRepository.updateUser(clientId, chatId, languageId, categoryId, nextQuizTime, wordsInTest)
+        return userRepository.updateUser(chatId, languageId, categoryId, nextQuizTime, wordsInTest)
     }
 
     override suspend fun getNextWordOrScheduleQuiz(chatId: Long): DataState<QuizWord> {

@@ -21,6 +21,8 @@ object SystemMessages {
 
     const val chooseLanguage = "Выберите язык из предложенных"
 
+    const val notFoundLanguage = "Язык не найден"
+
     const val chooseCategory = "Выберите категорию из предложенных"
 
     const val askForExam = "Вы ответили на все вопросы. Хотите начать экзамен?"
