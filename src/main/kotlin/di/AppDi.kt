@@ -1,4 +1,4 @@
-package inject
+package di
 
 import org.koin.dsl.module
 import repository.*

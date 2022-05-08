@@ -76,7 +76,7 @@ interface LangTestApi {
         @Path("chat_id") chatId: Long,
         @Path("quiz_word_id") wordId: Long,
         @Query("answer") answer: Boolean
-    ): Call<QuizStats>
+    ): Call<QuizWordStats>
 
     @PUT("api/quiz/{chat_id}/resetQuiz")
     fun resetQuiz(@Path("chat_id") chatId: Long): Call<String>

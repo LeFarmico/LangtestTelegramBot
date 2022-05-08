@@ -8,6 +8,8 @@ sealed class Command {
                 StartCommand.COMMAND -> StartCommand
                 StopCommand.COMMAND -> StopCommand
                 HelpCommand.COMMAND -> HelpCommand
+                GetUserData.COMMAND -> GetUserData
+                ResetQuiz.COMMAND -> ResetQuiz
                 // LangTestAbility
 
                 TimeToNextTestCommand.COMMAND -> TimeToNextTestCommand
@@ -16,7 +18,6 @@ sealed class Command {
                 SetCategoryCallback.COMMAND -> SetCategoryCallback(commandData.toLong())
                 CorrectAnswerCallback.COMMAND -> CorrectAnswerCallback(commandData.toLong())
                 IncorrectAnswerCallback.COMMAND -> IncorrectAnswerCallback(commandData.toLong())
-                AskExamCallback.COMMAND -> AskExamCallback(commandData.toBoolean())
                 SetLanguageCommand.COMMAND -> SetLanguageCommand
                 GetQuizTest.COMMAND -> GetQuizTest
 
@@ -41,8 +42,17 @@ sealed class Command {
     object HelpCommand : Command() {
         const val COMMAND = "help"
     }
+
     object TimeToNextTestCommand : Command() {
         const val COMMAND = "timetonexttest"
+    }
+
+    object GetUserData : Command() {
+        const val COMMAND = "stats"
+    }
+
+    object ResetQuiz : Command() {
+        const val COMMAND = "resetquiz"
     }
 
     object GetQuizTest : Command() {
@@ -51,24 +61,31 @@ sealed class Command {
     }
 
     data class StartQuizCallback(val start: Boolean) : Command() {
+
         companion object {
             const val COMMAND = "startquiz"
             fun buildCallBackQuery(start: Boolean): String = "$COMMAND $start"
         }
     }
+
     data class SetLanguageCallBack(val languageId: Long) : Command() {
+
         companion object {
             const val COMMAND = "langtestsetlanguage"
             fun buildCallBackQuery(languageId: Long): String = "$COMMAND $languageId"
         }
     }
+
     data class SetCategoryCallback(val categoryId: Long) : Command() {
+
         companion object {
             const val COMMAND = "langtestsetcategory"
             fun buildCallBackQuery(categoryId: Long): String = "$COMMAND $categoryId"
         }
     }
+
     data class CorrectAnswerCallback(val wordId: Long) : Command() {
+
         companion object {
             const val COMMAND = "correctlangtestanswer"
             fun buildCallBackQuery(wordId: Long): String = "$COMMAND $wordId"
@@ -76,15 +93,16 @@ sealed class Command {
     }
 
     data class IncorrectAnswerCallback(val wordId: Long) : Command() {
+
         companion object {
             const val COMMAND = "incorrectlangtestanswer"
             fun buildCallBackQuery(wordId: Long): String = "$COMMAND $wordId"
         }
     }
-    data class AskExamCallback(val start: Boolean) : Command() {
-        companion object {
-            const val COMMAND = "langtestexam"
-            fun buildCallBackQuery(start: Boolean): String = "$COMMAND $start"
-        }
-    }
+//    data class AskExamCallback(val start: Boolean) : Command() {
+//        companion object {
+//            const val COMMAND = "langtestexam"
+//            fun buildCallBackQuery(start: Boolean): String = "$COMMAND $start"
+//        }
+//    }
 }

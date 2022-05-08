@@ -1,5 +1,7 @@
 package res
 
+import entity.QuizViewData
+
 object SystemMessages {
     
     const val helpMsg = 
@@ -71,10 +73,46 @@ object SystemMessages {
         }
     }
 
-    fun userSettingsMessage(language: String, category: String): String {
+    fun breakBetweenQuiz(timeInMillis: Long): String {
+        val min = timeInMillis / 1000 / 60
+        return when {
+            min < 1 -> {
+                "Менее минуты"
+            }
+            min == 1L -> {
+                "$min минута"
+            }
+            min in 2..4 -> {
+                "$min минуты"
+            }
+            else -> {
+                "$min минут"
+            }
+        }
+    }
+
+    fun userDataMessage(quizViewData: QuizViewData): String {
         val msg = StringBuilder()
-        msg.append("Язык: $language \n")
-        msg.append("Категория: $category")
+        msg.append("Язык: ${quizViewData.languageName} \n")
+        msg.append("Категория: ${quizViewData.categoryName} \n")
+        msg.append("Слов в тесте: ${quizViewData.wordsInQuiz} \n")
+        msg.append("Номер текущего слова: ${quizViewData.currentWordNumber} \n")
+        msg.append("Перерыв между викторинами: ${quizViewData.breakTime} \n")
         return msg.toString()
+    }
+
+    fun userSettingsMessage(language: String, category: String, isUpdate: Boolean = false): String {
+        return if (isUpdate) {
+            val msg = StringBuilder()
+            msg.append("Ваши данные обновлены! \n")
+            msg.append("Язык: $language \n")
+            msg.append("Категория: $category")
+            msg.toString()
+        } else {
+            val msg = StringBuilder()
+            msg.append("Язык: $language \n")
+            msg.append("Категория: $category")
+            msg.toString()
+        }
     }
 }

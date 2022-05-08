@@ -24,7 +24,8 @@ class LanguageRepositoryImpl(
 
     override suspend fun getLanguageById(languageId: Long): DataState<Language> {
         return try {
-            val response = langTestApi.getLanguageById(languageId).execute()
+            val callback = langTestApi.getLanguageById(languageId)
+            val response = callback.execute()
             if (response.body() == null) {
                 DataState.Empty
             } else {
