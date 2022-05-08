@@ -3,17 +3,18 @@ package entity
 import com.google.gson.annotations.SerializedName
 
 data class QuizData(
-    @SerializedName("clientId")
-    val clientId: String,
+
+    @SerializedName("chatId")
+    val chatId: Long,
 
     @SerializedName("status")
     val status: String = "DEFAULT",
 
     @SerializedName("wordsInQuiz")
-    val wordsInQuiz: Long = 5,
+    val wordsInQuiz: Int = 5,
 
     @SerializedName("currentWordNumber")
-    val currentWordNumber: Long = 0,
+    val currentWordNumber: Int = 0,
 
     @SerializedName("breakTimeInMillis")
     val breakTimeInMillis: Long = 10_000,
@@ -22,8 +23,5 @@ data class QuizData(
     val languageId: Long,
 
     @SerializedName("categoryId")
-    val categoryId: Long,
-
-    @SerializedName("chatId")
-    val chatId: Long
+    val categoryId: Long
 )
