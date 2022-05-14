@@ -39,7 +39,14 @@ interface LangTestIntent {
 
     suspend fun getNextQuizWord(chatId: Long, messageId: Int)
     
-    suspend fun answerToQuizQuestion(chatId: Long, messageId: Int, wordId: Long, answer: Boolean)
+    suspend fun answerToQuizQuestion(
+        chatId: Long,
+        messageId: Int,
+        wordId: Long,
+        answer: Boolean,
+        wordOriginal: String,
+        wordPressed: String
+    )
 
     suspend fun createQuizWords(chatId: Long, messageId: Int)
 

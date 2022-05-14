@@ -73,11 +73,15 @@ class Bot(
             log.error("Execute error. Illegal type of message: ${request!!.javaClass.simpleName}", IllegalArgumentException())
             return
         }
-        when (request) {
-            is EditUserMessage -> execute(request.message)
-            Empty -> { }
-            is DeleteUserMessage -> execute(request.message)
-            is UserMessage -> execute(request.message)
+        try {
+            when (request) {
+                is EditUserMessage -> execute(request.message)
+                Empty -> { }
+                is DeleteUserMessage -> execute(request.message)
+                is UserMessage -> execute(request.message)
+            }
+        } catch (e: TelegramApiRequestException) {
+            log.error("[ERROR] Bad request exception for chatId: $chatId ", e)
         }
     }
 

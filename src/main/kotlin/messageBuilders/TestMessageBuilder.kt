@@ -5,7 +5,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 
 class TestMessageBuilder(
     chatId: Long,
-    private val wordId: Long
+    private val wordId: Long,
+    private val wordOriginal: String
 ) {
     
     private val message = MessageBuilder.setChatId(chatId)
@@ -18,19 +19,25 @@ class TestMessageBuilder(
     }
 
     fun addIncorrectButton(text: String): TestMessageBuilder {
-        buttonBuilder.addButton(text, Command.CorrectAnswerCallback.buildCallBackQuery(wordId))
+        buttonBuilder.addButton(text, Command.CorrectAnswerCallback.buildCallBackQuery(wordId, wordOriginal, text))
         return this
     }
 
     fun addIncorrectButtonList(textList: List<String>): TestMessageBuilder {
         for (i in textList.indices) {
-            buttonBuilder = buttonBuilder.addButton(textList[i], Command.IncorrectAnswerCallback.buildCallBackQuery(wordId))
+            buttonBuilder = buttonBuilder.addButton(
+                textList[i],
+                Command.IncorrectAnswerCallback.buildCallBackQuery(wordId, wordOriginal, textList[i])
+            )
         }
         return this
     }
 
     fun addCorrectButton(text: String): TestMessageBuilder {
-        buttonBuilder = buttonBuilder.addButton(text, Command.CorrectAnswerCallback.buildCallBackQuery(wordId))
+        buttonBuilder = buttonBuilder.addButton(
+            text,
+            Command.CorrectAnswerCallback.buildCallBackQuery(wordId, wordOriginal, text)
+        )
         return this
     }
 
@@ -41,8 +48,8 @@ class TestMessageBuilder(
     }
     
     companion object {
-        fun setChatId(chatId: Long, wordId: Long): TestMessageBuilder {
-            return TestMessageBuilder(chatId, wordId)
+        fun setChatId(chatId: Long, wordId: Long, wordOriginal: String): TestMessageBuilder {
+            return TestMessageBuilder(chatId, wordId, wordOriginal)
         }
     }
 }
