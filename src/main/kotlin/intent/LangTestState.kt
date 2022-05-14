@@ -8,6 +8,8 @@ data class ErrorState(val chatId: Long, val messageId: Int, val e: Exception, va
 
 data class NotFound(val chatId: Long, val messageId: Int, val message: String) : LangTestState()
 
+data class Notification(val chatId: Long, val messageId: Int, val message: String) : LangTestState()
+
 // User
 data class UserDataSent(
     val chatId: Long,
@@ -51,6 +53,8 @@ data class AskToResetQuiz(val chatId: Long, val messageId: Int, val message: Str
 data class QuizResetted(val chatId: Long, val messageId: Int, val message: String) : LangTestState()
 
 data class QuizRestarted(val chatId: Long, val messageId: Int, val message: String) : LangTestState()
+
+data class QuizWordPressed(val chatId: Long, val messageId: Int, val message: String) : LangTestState()
 
 // Data
 data class NextQuizTime(val chatId: Long, val messageId: Int, val nextQuizTimeText: String) : LangTestState()

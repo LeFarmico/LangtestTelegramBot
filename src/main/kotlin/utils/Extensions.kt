@@ -20,8 +20,13 @@ val Update.getFirstName: String get() =
 val Update.getLastName: String get() =
     this.message?.from?.lastName ?: this.callbackQuery.from.lastName
 
-val Update.getUserName: String get() =
-    this.message?.from?.userName ?: this.callbackQuery.from.userName
+val Update.getUserName: String? get() {
+    return try {
+        this.message?.from?.userName ?: this.callbackQuery.from.userName
+    } catch (e: NullPointerException) {
+        null
+    }
+}
 
 val Update.getText: String get() {
     return if (this.callbackQuery == null) {

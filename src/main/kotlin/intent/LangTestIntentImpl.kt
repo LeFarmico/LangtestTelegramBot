@@ -282,7 +282,14 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
         }
     }
 
-    override suspend fun answerToQuizQuestion(chatId: Long, messageId: Int, wordId: Long, answer: Boolean) {
+    override suspend fun answerToQuizQuestion(
+        chatId: Long,
+        messageId: Int,
+        wordId: Long,
+        answer: Boolean,
+        wordOriginal: String,
+        wordPressed: String
+    ) {
         when (val answerData = quizRepository.setAnswerForQuizWord(chatId, wordId, answer)) {
             DataState.Empty -> {
                 NotFound(chatId, messageId, TextResources.wordNotFound)
@@ -292,10 +299,10 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
             }
             is DataState.Success -> {
                 if (answerData.data.nextQuizTime == null) {
-                    handleAnswerState(answer, chatId, messageId)
+                    handleAnswerState(answer, chatId, messageId, wordOriginal, wordPressed)
                     getNextQuizWord(chatId, messageId)
                 } else {
-                    handleAnswerState(answer, chatId, messageId)
+                    handleAnswerState(answer, chatId, messageId, wordOriginal, wordPressed)
 
                     val nextQuizTimeDelay = answerData.data.nextQuizTime!! - System.currentTimeMillis()
                     scheduleNextQuiz(chatId, messageId, nextQuizTimeDelay)
@@ -308,9 +315,16 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
         }
     }
 
-    private fun handleAnswerState(answer: Boolean, chatId: Long, messageId: Int) {
+    private fun handleAnswerState(
+        answer: Boolean,
+        chatId: Long,
+        messageId: Int,
+        wordOriginal: String,
+        wordPressed: String
+    ) {
         val answerText = if (answer) { TextResources.rightAnswer } else { TextResources.wrongAnswer }
-        val state = QuizAnswered(chatId, messageId, answerText)
+        val message = "$answerText: $wordOriginal -> $wordPressed"
+        val state = QuizAnswered(chatId, messageId, message)
         handler.handleState(state, chatId, messageId)
     }
 

@@ -6,7 +6,7 @@ interface IRequestData {
     val chatId: Long
     val messageId: Int
     val userId: String
-    val userName: String
+    val userName: String?
     val firstName: String
     val lastName: String
     val command: Command

@@ -23,10 +23,24 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
             val messageId = requestData.messageId
             when (val command = requestData.command) {
                 is Command.CorrectAnswerCallback -> {
-                    langTestIntent.answerToQuizQuestion(chatId, messageId, command.wordId, true)
+                    langTestIntent.answerToQuizQuestion(
+                        chatId,
+                        messageId,
+                        command.wordId,
+                        true,
+                        command.wordOriginal,
+                        command.translation
+                    )
                 }
                 is Command.IncorrectAnswerCallback -> {
-                    langTestIntent.answerToQuizQuestion(chatId, messageId, command.wordId, false)
+                    langTestIntent.answerToQuizQuestion(
+                        chatId,
+                        messageId,
+                        command.wordId,
+                        false,
+                        command.wordOriginal,
+                        command.wrongTranslation
+                    )
                 }
                 is Command.StartQuizCallback -> {
                     langTestIntent.startQuiz(chatId, messageId, command.start)
@@ -180,14 +194,14 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
             is AskToContinueQuiz -> {
                 val response = ResponseFactory.builder(chatId)
                     .message(TextResources.quizContinueQuestion)
-                    .addButton(TextResources.yes, Command.GetQuizTest.buildCallBackQuery())
+                    .addButton(TextResources.yes, Command.StartQuizCallback.buildCallBackQuery(true))
                     .addButton(TextResources.no, Command.StartQuizCallback.buildCallBackQuery(false))
                     .addButton(TextResources.startAgain, Command.ResetQuiz.COMMAND)
                     .build()
                 responseReceiver.receiveData(response)
             }
             is NextQuizWord -> {
-                val message = TestMessageBuilder.setChatId(chatId, state.quizWord.id)
+                val message = TestMessageBuilder.setChatId(chatId, state.quizWord.id, state.quizWord.originalWord)
                     .setQuizText(TextResources.quizText, state.quizWord.originalWord)
                     .addIncorrectButtonList(state.quizWord.wrongTranslations)
                     .addCorrectButton(state.quizWord.correctTranslation)
@@ -237,6 +251,18 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
                 responseReceiver.receiveData(response)
             }
             is QuizRestarted -> {
+                val response = ResponseFactory.builder(chatId)
+                    .message(state.message)
+                    .build()
+                responseReceiver.receiveData(response)
+            }
+            is Notification -> {
+                val response = ResponseFactory.builder(chatId)
+                    .message(state.message)
+                    .build()
+                responseReceiver.receiveData(response)
+            }
+            is QuizWordPressed -> {
                 val response = ResponseFactory.builder(chatId)
                     .message(state.message)
                     .build()
