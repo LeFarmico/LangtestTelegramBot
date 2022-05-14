@@ -80,4 +80,7 @@ interface LangTestApi {
 
     @PUT("api/quiz/{chat_id}/resetQuiz")
     fun resetQuiz(@Path("chat_id") chatId: Long): Call<String>
+
+    @PUT("api/quiz/{chat_id}/resetQuizWordNumber")
+    fun resetQuizWordNumber(@Path("chat_id") chatId: Long): Call<String>
 }

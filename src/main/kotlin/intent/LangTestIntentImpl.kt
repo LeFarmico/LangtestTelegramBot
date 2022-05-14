@@ -12,7 +12,7 @@ import repository.CategoryRepository
 import repository.LanguageRepository
 import repository.QuizRepository
 import repository.UserRepository
-import res.SystemMessages
+import res.TextResources
 import state.DataState
 import java.util.*
 
@@ -28,7 +28,7 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
     override suspend fun checkForUser(chatId: Long, messageId: Int) {
         when (val quizDataState = userRepo.getUserByChatId(chatId)) {
             DataState.Empty -> {
-                val state = StartedUserRegistration(chatId, messageId, "Начинаем регистрацию")
+                val state = StartedUserRegistration(chatId, messageId, TextResources.startRegistration)
                 handler.handleState(state, chatId, messageId)
                 startUserRegistration(chatId, messageId)
             }
@@ -43,12 +43,12 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
                         askToContinueQuiz(chatId, messageId)
                     }
                 } catch (e: ClassCastException) {
-                    val state = ErrorState(chatId, messageId, e, "Данные не найдены")
+                    val state = ErrorState(chatId, messageId, e, TextResources.dataNotFound)
                     handler.handleState(state, chatId, messageId)
                 }
             }
             is DataState.Failure -> {
-                val state = ErrorState(chatId, messageId, quizDataState.exception, "Что-то пошло не так")
+                val state = ErrorState(chatId, messageId, quizDataState.exception, TextResources.getDataFail)
                 handler.handleState(state, chatId, messageId)
             }
         }
@@ -57,11 +57,11 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
     override suspend fun getUserData(chatId: Long, messageId: Int) {
         when (val quizData = userRepo.getUserByChatId(chatId)) {
             DataState.Empty -> {
-                val state = NotFound(chatId, messageId, "Пользователь не найден")
+                val state = NotFound(chatId, messageId, TextResources.userNotFound)
                 handler.handleState(state, chatId, messageId)
             }
             is DataState.Failure -> {
-                val state = ErrorState(chatId, messageId, quizData.exception, "Что-то пошло не так")
+                val state = ErrorState(chatId, messageId, quizData.exception, TextResources.getUserDataFail)
                 handler.handleState(state, chatId, messageId)
             }
             is DataState.Success -> {
@@ -70,7 +70,7 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
                     val state = UserDataSent(chatId, messageId, quizViewData)
                     handler.handleState(state, chatId, messageId)
                 } catch (e: ClassCastException) {
-                    val state = ErrorState(chatId, messageId, e, "Данные не найдены")
+                    val state = ErrorState(chatId, messageId, e, TextResources.dataNotFound)
                     handler.handleState(state, chatId, messageId)
                 }
             }
@@ -80,10 +80,10 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
     override suspend fun startUserRegistration(chatId: Long, messageId: Int) {
         val state = when (val langListState = langRepo.getAvailableLanguages()) {
             DataState.Empty -> {
-                NotFound(chatId, messageId, "Язык не найден")
+                NotFound(chatId, messageId, TextResources.langNotFound)
             }
             is DataState.Failure -> {
-                ErrorState(chatId, messageId, langListState.exception, "Что-то пошло не так")
+                ErrorState(chatId, messageId, langListState.exception, TextResources.startRegistrationFail)
             }
             is DataState.Success -> {
                 LanguagesFounded(chatId, messageId, langListState.data)
@@ -95,11 +95,11 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
     override suspend fun finishRegistration(chatId: Long, messageId: Int, languageId: Long, categoryId: Long) {
         when (val quizDataState = userRepo.addUser(chatId, languageId, categoryId)) {
             DataState.Empty -> {
-                val state = NotFound(chatId, messageId, "Пользователь не зарегистрирован")
+                val state = NotFound(chatId, messageId, TextResources.userNotRegistered)
                 handler.handleState(state, chatId, messageId)
             }
             is DataState.Failure -> {
-                val state = ErrorState(chatId, messageId, quizDataState.exception, "Что-то пошло не так")
+                val state = ErrorState(chatId, messageId, quizDataState.exception, TextResources.finishRegistrationFail)
                 handler.handleState(state, chatId, messageId)
             }
             is DataState.Success -> {
@@ -109,7 +109,7 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
                     handler.handleState(state, chatId, messageId)
                     createQuizWords(chatId, messageId)
                 } catch (e: TypeCastException) {
-                    ErrorState(chatId, messageId, e, "Данные не найдены")
+                    ErrorState(chatId, messageId, e, TextResources.dataNotFound)
                 }
             }
         }
@@ -126,11 +126,11 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
             )
         ) {
             DataState.Empty -> {
-                val state = NotFound(chatId, messageId, "Пользователь не найден")
+                val state = NotFound(chatId, messageId, TextResources.userNotFound)
                 handler.handleState(state, chatId, messageId)
             }
             is DataState.Failure -> {
-                val state = ErrorState(chatId, messageId, data.exception, "Что-то пошло не так")
+                val state = ErrorState(chatId, messageId, data.exception, TextResources.updateDataFail)
                 handler.handleState(state, chatId, messageId)
             }
             is DataState.Success -> {
@@ -140,7 +140,7 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
                     handler.handleState(state, chatId, messageId)
                     resetQuizWords(chatId, messageId)
                 } catch (e: java.lang.ClassCastException) {
-                    val state = ErrorState(chatId, messageId, e, "Данные не найдены")
+                    val state = ErrorState(chatId, messageId, e, TextResources.dataNotFound)
                     handler.handleState(state, chatId, messageId)
                 }
             }
@@ -150,10 +150,10 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
     override suspend fun removeUser(chatId: Long, messageId: Int) {
         val state = when (userRepo.deleteUserChatId(chatId)) {
             true -> {
-                UserRemoved(chatId, messageId, "Пользовательские данные удалены")
+                UserRemoved(chatId, messageId, TextResources.userDataDeleted)
             }
             false -> {
-                NotFound(chatId, messageId, "Пользовательн не существует")
+                NotFound(chatId, messageId, TextResources.userNotExist)
             }
         }
         handler.handleState(state, chatId, messageId)
@@ -162,10 +162,10 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
     override suspend fun getLanguages(chatId: Long, messageId: Int) {
         val state = when (val langData = langRepo.getAvailableLanguages()) {
             DataState.Empty -> {
-                NotFound(chatId, messageId, "Язык не найден")
+                NotFound(chatId, messageId, TextResources.langNotFound)
             }
             is DataState.Failure -> {
-                ErrorState(chatId, messageId, langData.exception, "Не удалось получить языки")
+                ErrorState(chatId, messageId, langData.exception, TextResources.getLangListFail)
             }
             is DataState.Success -> {
                 LanguagesFounded(chatId, messageId, langData.data)
@@ -177,11 +177,11 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
     override suspend fun selectLanguage(chatId: Long, messageId: Int, languageId: Long) {
         when (val langData = langRepo.getLanguageById(languageId)) {
             DataState.Empty -> {
-                val state = NotFound(chatId, messageId, "Язык не найден")
+                val state = NotFound(chatId, messageId, TextResources.langNotFound)
                 handler.handleState(state, chatId, messageId)
             }
             is DataState.Failure -> {
-                val state = ErrorState(chatId, messageId, langData.exception, "Не удалось выбрать язык")
+                val state = ErrorState(chatId, messageId, langData.exception, TextResources.setLangFail)
                 handler.handleState(state, chatId, messageId)
             }
             is DataState.Success -> {
@@ -195,10 +195,10 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
     override suspend fun getCategories(chatId: Long, messageId: Int, languageId: Long) {
         val state = when (val categoriesData = categoryRepository.getCategoriesByLanguage(languageId)) {
             DataState.Empty -> {
-                NotFound(chatId, messageId, "Категории не найдены")
+                NotFound(chatId, messageId, TextResources.categoryListNotFound)
             }
             is DataState.Failure -> {
-                ErrorState(chatId, messageId, categoriesData.exception, "Не удалось получить категории")
+                ErrorState(chatId, messageId, categoriesData.exception, TextResources.getCategoryListFail)
             }
             is DataState.Success -> {
                 CategoryFounded(chatId, messageId, categoriesData.data)
@@ -210,11 +210,11 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
     override suspend fun selectCategory(chatId: Long, messageId: Int, categoryId: Long) {
         when (val categoryData = categoryRepository.getCategory(categoryId)) {
             DataState.Empty -> {
-                val state = NotFound(chatId, messageId, "Категоря не найдена")
+                val state = NotFound(chatId, messageId, TextResources.categoryNotFound)
                 handler.handleState(state, chatId, messageId)
             }
             is DataState.Failure -> {
-                val state = ErrorState(chatId, messageId, categoryData.exception, "Не удалось выбрать категорию")
+                val state = ErrorState(chatId, messageId, categoryData.exception, TextResources.setCategoryFail)
                 handler.handleState(state, chatId, messageId)
             }
             is DataState.Success -> {
@@ -237,7 +237,7 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
     }
 
     override suspend fun askToResetQuiz(chatId: Long, messageId: Int) {
-        val state = AskToResetQuiz(chatId, messageId, "Хотите начать заново?")
+        val state = AskToResetQuiz(chatId, messageId, TextResources.startAgain)
         handler.handleState(state, chatId, messageId)
     }
 
@@ -245,21 +245,21 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
         if (start) {
             when (val quizDataState = userRepo.getUserByChatId(chatId)) {
                 DataState.Empty -> {
-                    val state = NotFound(chatId, messageId, "Прежде чем начать, пройдите регистрацию.")
+                    val state = NotFound(chatId, messageId, TextResources.registerWarning)
                     handler.handleState(state, chatId, messageId)
                 }
                 is DataState.Success -> {
-                    val state = QuizStarted(chatId, messageId, "Начинаем викторину!")
+                    val state = QuizStarted(chatId, messageId, TextResources.startQuizMsg)
                     handler.handleState(state, chatId, messageId)
                     getNextQuizWord(chatId, messageId)
                 }
                 is DataState.Failure -> {
-                    val state = ErrorState(chatId, messageId, quizDataState.exception, "Что-то пошло не так")
+                    val state = ErrorState(chatId, messageId, quizDataState.exception, TextResources.startQuizFail)
                     handler.handleState(state, chatId, messageId)
                 }
             }
         } else {
-            val state = NotFound(chatId, messageId, "Для того чтобы начать викторину введите команду /start")
+            val state = NotFound(chatId, messageId, TextResources.startQuizFail)
             handler.handleState(state, chatId, messageId)
         }
     }
@@ -267,12 +267,12 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
     override suspend fun getNextQuizWord(chatId: Long, messageId: Int) {
         when (val quiz = quizRepository.getNextQuizWord(chatId)) {
             DataState.Empty -> {
-                val state = NotFound(chatId, messageId, "Вы ответили на все слова!")
+                val state = NotFound(chatId, messageId, TextResources.allWordsAnswered)
                 handler.handleState(state, chatId, messageId)
                 askToResetQuiz(chatId, messageId)
             }
             is DataState.Failure -> {
-                val state = ErrorState(chatId, messageId, quiz.exception, "Слова не найдены!")
+                val state = ErrorState(chatId, messageId, quiz.exception, TextResources.wordsNotFound)
                 handler.handleState(state, chatId, messageId)
             }
             is DataState.Success -> {
@@ -285,30 +285,38 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
     override suspend fun answerToQuizQuestion(chatId: Long, messageId: Int, wordId: Long, answer: Boolean) {
         when (val answerData = quizRepository.setAnswerForQuizWord(chatId, wordId, answer)) {
             DataState.Empty -> {
-                NotFound(chatId, messageId, "Слово не найдено!")
+                NotFound(chatId, messageId, TextResources.wordNotFound)
             }
             is DataState.Failure -> {
-                ErrorState(chatId, messageId, answerData.exception, "Неудалось зарегистрировать ответ.")
+                ErrorState(chatId, messageId, answerData.exception, TextResources.setAnswerFail)
             }
             is DataState.Success -> {
                 if (answerData.data.nextQuizTime == null) {
-                    val state = if (answer) {
-                        QuizAnswered(chatId, messageId, "Верный ответ")
-                    } else {
-                        QuizAnswered(chatId, messageId, "Неверный ответ")
-                    }
-                    handler.handleState(state, chatId, messageId)
+                    handleAnswerState(answer, chatId, messageId)
                     getNextQuizWord(chatId, messageId)
                 } else {
-                    timer.schedule(
-                        ScheduleQuiz(chatId, messageId),
-                        answerData.data.nextQuizTime!!
-                    )
-                    val state = NextQuizTime(chatId, messageId, SystemMessages.nextTestNotifyMessage(answerData.data.nextQuizTime!!))
+                    handleAnswerState(answer, chatId, messageId)
+
+                    val nextQuizTimeDelay = answerData.data.nextQuizTime!! - System.currentTimeMillis()
+                    scheduleNextQuiz(chatId, messageId, nextQuizTimeDelay)
+                    quizRepository.resetQuizWordNumber(chatId)
+
+                    val state = NextQuizTime(chatId, messageId, TextResources.nextTestNotifyMessage(nextQuizTimeDelay))
                     handler.handleState(state, chatId, messageId)
                 }
             }
         }
+    }
+
+    private fun handleAnswerState(answer: Boolean, chatId: Long, messageId: Int) {
+        val answerText = if (answer) { TextResources.rightAnswer } else { TextResources.wrongAnswer }
+        val state = QuizAnswered(chatId, messageId, answerText)
+        handler.handleState(state, chatId, messageId)
+    }
+
+    private fun scheduleNextQuiz(chatId: Long, messageId: Int, nextQuizTimeDelay: Long) {
+        val state = ScheduleQuiz(chatId, messageId)
+        timer.schedule(state, nextQuizTimeDelay)
     }
 
     override suspend fun createQuizWords(chatId: Long, messageId: Int) {
@@ -317,7 +325,7 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
                 askToStartQuiz(chatId, messageId)
             }
             false -> {
-                val state = NotFound(chatId, messageId, "Что-то пошло не так.")
+                val state = NotFound(chatId, messageId, TextResources.createQuizFail)
                 handler.handleState(state, chatId, messageId)
             }
         }
@@ -326,12 +334,26 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
     override suspend fun resetQuizWords(chatId: Long, messageId: Int) {
         when (quizRepository.resetQuiz(chatId)) {
             true -> {
-                val state = QuizResetted(chatId, messageId, "Викторина сброшена")
+                val state = QuizResetted(chatId, messageId, TextResources.quizResetted)
                 handler.handleState(state, chatId, messageId)
                 askToStartQuiz(chatId, messageId)
             }
             false -> {
-                val state = NotFound(chatId, messageId, "Что-то пошло не так.")
+                val state = NotFound(chatId, messageId, TextResources.quizNotFound)
+                handler.handleState(state, chatId, messageId)
+            }
+        }
+    }
+
+    override suspend fun restartQuizWords(chatId: Long, messageId: Int) {
+        when (quizRepository.resetQuiz(chatId)) {
+            true -> {
+                val state = QuizResetted(chatId, messageId, TextResources.quizResetted)
+                handler.handleState(state, chatId, messageId)
+                askToStartQuiz(chatId, messageId)
+            }
+            false -> {
+                val state = NotFound(chatId, messageId, TextResources.quizNotFound)
                 handler.handleState(state, chatId, messageId)
             }
         }
@@ -353,7 +375,7 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
         return QuizViewData(
             languageName.await(),
             categoryName.await(),
-            SystemMessages.breakBetweenQuiz(quizData.breakTimeInMillis),
+            TextResources.breakBetweenQuiz(quizData.breakTimeInMillis),
             quizData.wordsInQuiz,
             quizData.currentWordNumber
         )

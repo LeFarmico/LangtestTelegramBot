@@ -45,6 +45,8 @@ interface LangTestIntent {
 
     suspend fun resetQuizWords(chatId: Long, messageId: Int)
 
+    suspend fun restartQuizWords(chatId: Long, messageId: Int)
+
     // ---------- data --------
     suspend fun timeToNextQuiz(chatId: Long, messageId: Int)
 }

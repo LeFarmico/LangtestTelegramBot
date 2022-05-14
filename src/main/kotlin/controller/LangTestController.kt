@@ -9,7 +9,7 @@ import kotlinx.coroutines.*
 import messageBuilders.*
 import org.slf4j.LoggerFactory
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
-import res.SystemMessages
+import res.TextResources
 
 class LangTestController(override val responseReceiver: IHandlerReceiver) : IController, IStateHandler {
 
@@ -55,6 +55,9 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
                 Command.ResetQuiz -> {
                     langTestIntent.resetQuizWords(chatId, messageId)
                 }
+                Command.RestartQuiz -> {
+                    langTestIntent.restartQuizWords(chatId, messageId)
+                }
                 else -> {}
             }
         }
@@ -71,7 +74,7 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
             is UserRegistered -> {
                 val response = ResponseFactory.builder(state.chatId)
                     .message(
-                        SystemMessages.userSettingsMessage(
+                        TextResources.userSettingsMessage(
                             language = state.quizViewData.languageName,
                             category = state.quizViewData.categoryName
                         )
@@ -82,7 +85,7 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
             is UpdatedUserData -> {
                 val response = ResponseFactory.builder(state.chatId)
                     .message(
-                        SystemMessages.userSettingsMessage(
+                        TextResources.userSettingsMessage(
                             language = state.quizViewData.languageName,
                             category = state.quizViewData.categoryName
                         )
@@ -98,7 +101,7 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
             }
             is CategoryFounded -> {
                 val response = ResponseFactory.builder(chatId)
-                    .message(SystemMessages.chooseCategory)
+                    .message(TextResources.chooseCategory)
                     .setButtons {
                         val buttonList = mutableListOf<InlineKeyboardButton>()
                         for (i in state.categoryList.indices) {
@@ -110,26 +113,27 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
                             )
                         }
                         buttonList
-                    }.build()
+                    }.buttonParams(isVertical = true)
+                    .build()
                 responseReceiver.receiveData(response)
             }
             is CategoryPicked -> {
                 val response = ResponseFactory.builder(state.chatId)
                     .editCurrent(messageId)
-                    .message(SystemMessages.categoryChooseMessage(state.category.categoryName))
+                    .message(TextResources.categoryChooseMessage(state.category.categoryName))
                     .build()
                 responseReceiver.receiveData(response)
             }
             is LanguagePicked -> {
                 val response = ResponseFactory.builder(state.chatId)
                     .editCurrent(messageId)
-                    .message(SystemMessages.languageChooseMessage(state.language.languageName))
+                    .message(TextResources.languageChooseMessage(state.language.languageName))
                     .build()
                 responseReceiver.receiveData(response)
             }
             is LanguagesFounded -> {
                 val response = ResponseFactory.builder(state.chatId)
-                    .message(SystemMessages.chooseLanguage)
+                    .message(TextResources.chooseLanguage)
                     .setButtons {
                         val buttonList = mutableListOf<InlineKeyboardButton>()
                         for (i in state.languageList.indices) {
@@ -159,32 +163,32 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
             }
             is AskStartQuiz -> {
                 val response = ResponseFactory.builder(chatId)
-                    .message(SystemMessages.quizStartQuestion)
-                    .addButton(SystemMessages.yes, Command.StartQuizCallback.buildCallBackQuery(true))
-                    .addButton(SystemMessages.no, Command.StartQuizCallback.buildCallBackQuery(false))
+                    .message(TextResources.quizStartQuestion)
+                    .addButton(TextResources.yes, Command.StartQuizCallback.buildCallBackQuery(true))
+                    .addButton(TextResources.no, Command.StartQuizCallback.buildCallBackQuery(false))
                     .build()
                 responseReceiver.receiveData(response)
             }
             is AskToResetQuiz -> {
                 val response = ResponseFactory.builder(chatId)
                     .message(state.message)
-                    .addButton(SystemMessages.yes, Command.ResetQuiz.COMMAND)
-                    .addButton(SystemMessages.no, Command.StartQuizCallback.buildCallBackQuery(false))
+                    .addButton(TextResources.yes, Command.ResetQuiz.COMMAND)
+                    .addButton(TextResources.no, Command.StartQuizCallback.buildCallBackQuery(false))
                     .build()
                 responseReceiver.receiveData(response)
             }
             is AskToContinueQuiz -> {
                 val response = ResponseFactory.builder(chatId)
-                    .message(SystemMessages.quizContinueQuestion)
-                    .addButton(SystemMessages.yes, Command.GetQuizTest.buildCallBackQuery())
-                    .addButton(SystemMessages.no, Command.StartQuizCallback.buildCallBackQuery(false))
-                    .addButton(SystemMessages.startAgain, Command.ResetQuiz.COMMAND)
+                    .message(TextResources.quizContinueQuestion)
+                    .addButton(TextResources.yes, Command.GetQuizTest.buildCallBackQuery())
+                    .addButton(TextResources.no, Command.StartQuizCallback.buildCallBackQuery(false))
+                    .addButton(TextResources.startAgain, Command.ResetQuiz.COMMAND)
                     .build()
                 responseReceiver.receiveData(response)
             }
             is NextQuizWord -> {
                 val message = TestMessageBuilder.setChatId(chatId, state.quizWord.id)
-                    .setQuizText(SystemMessages.quizText, state.quizWord.originalWord)
+                    .setQuizText(TextResources.quizText, state.quizWord.originalWord)
                     .addIncorrectButtonList(state.quizWord.wrongTranslations)
                     .addCorrectButton(state.quizWord.correctTranslation)
                     .build()
@@ -202,7 +206,7 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
             is ErrorState -> {
                 log.error(state.message, state.e)
                 val response = ResponseFactory.builder(state.chatId)
-                    .message(SystemMessages.unexpectedError)
+                    .message(TextResources.unexpectedError)
                     .build()
                 responseReceiver.receiveData(response)
             }
@@ -221,13 +225,19 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
             }
             is UserDataSent -> {
                 val response = ResponseFactory.builder(chatId)
-                    .message(SystemMessages.userDataMessage(state.quizViewData))
+                    .message(TextResources.userDataMessage(state.quizViewData))
                     .build()
                 responseReceiver.receiveData(response)
             }
             is QuizResetted -> {
                 val response = ResponseFactory.builder(chatId)
                     .editCurrent(messageId)
+                    .message(state.message)
+                    .build()
+                responseReceiver.receiveData(response)
+            }
+            is QuizRestarted -> {
+                val response = ResponseFactory.builder(chatId)
                     .message(state.message)
                     .build()
                 responseReceiver.receiveData(response)

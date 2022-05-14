@@ -10,7 +10,7 @@ sealed class Command {
                 HelpCommand.COMMAND -> HelpCommand
                 GetUserData.COMMAND -> GetUserData
                 ResetQuiz.COMMAND -> ResetQuiz
-                // LangTestAbility
+                RestartQuiz.COMMAND -> RestartQuiz
 
                 TimeToNextTestCommand.COMMAND -> TimeToNextTestCommand
                 StartQuizCallback.COMMAND -> StartQuizCallback(commandData.toBoolean())
@@ -58,6 +58,10 @@ sealed class Command {
     object GetQuizTest : Command() {
         const val COMMAND = "continuequiz"
         fun buildCallBackQuery(): String = COMMAND
+    }
+
+    object RestartQuiz : Command() {
+        const val COMMAND = "restartquiz"
     }
 
     data class StartQuizCallback(val start: Boolean) : Command() {

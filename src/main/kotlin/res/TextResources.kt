@@ -2,7 +2,7 @@ package res
 
 import entity.QuizViewData
 
-object SystemMessages {
+object TextResources {
     
     const val helpMsg = 
         "*Это вспомогательное сообщение - здесь назодятся всё что я умею.* \n" +
@@ -17,33 +17,77 @@ object SystemMessages {
         "Я создан чтобы помочь изучать его \n" + 
         "Чтобы узнать что я умею - введи команду /help \n"
 
-    const val rightAnswer = "Верный ответ"
+    // ---------- registration ------------
 
-    const val wrongAnswer = "Неверный ответ"
+    const val startRegistration = "Начинаем регистрацию"
+
+    const val startRegistrationFail = "Не удалось начать регистрацию."
+
+    const val userNotRegistered = "Пользователь не зарегистрирован"
+
+    const val finishRegistrationFail = "Не удалось завершить регистрацию."
+
+    const val registerWarning = "Прежде чем начать, пройдите регистрацию."
+
+    // ---------- data ----------
+
+    const val dataNotFound = "Данные не найдены"
+
+    const val getDataFail = "Не удалось получить данные."
+
+    const val getUserDataFail = "Не удалось получить данные пользователя."
+
+    const val updateDataFail = "Не удалось обновить данные"
+
+    // ----------- lang ---------
+
+    const val langNotFound = "Язык не найден"
+
+    const val getLangListFail = "Не удалось получить языки"
+
+    const val setLangFail = "Не удалось выбрать язык"
 
     const val chooseLanguage = "Выберите язык из предложенных"
 
-    const val notFoundLanguage = "Язык не найден"
+    // ----------- user ----------
+
+    const val userDataDeleted = "Пользовательские данные удалены"
+
+    const val userNotExist = "Пользователь не существует"
+
+    const val userNotFound = "Пользователь не найден."
+
+    // ----------- category -------------
+
+    const val categoryListNotFound = "Категории не найдены"
+
+    const val categoryNotFound = "Категоря не найдена"
+
+    const val setCategoryFail = "Не удалось выбрать категорию"
+
+    const val getCategoryListFail = "Не удалось получить категории"
 
     const val chooseCategory = "Выберите категорию из предложенных"
 
-    const val askForExam = "Вы ответили на все вопросы. Хотите начать экзамен?"
+    // ----------- common ---------------
+
+    const val rightAnswer = "Верный ответ"
+
+    const val wrongAnswer = "Неверный ответ"
 
     const val yes = "Да"
 
     const val no = "Нет"
 
-    const val notRegistered = "Вы не зарегистрированны в системе"
+    const val unexpectedError = "Упс! что-то пошло не так..."
 
-    const val quizText = "Выберите правильный перевод слова:"
+    // ----------- quiz -----------
 
-    const val startQuizHelpMsg = "Чтобы начать викторину введите /start."
+    const val quizText = "Выберите правильный перевод слова: "
 
     const val startQuizMsg = "Начинаем викторину!"
 
-    const val userNotFound = "Пользователь не найден."
-
-    const val unexpectedError = "Упс! что-то пошло не так..."
+    const val startQuizFail = "Не удалось начать викторину."
 
     const val quizStartQuestion = "Хотите начать викторину?"
 
@@ -51,9 +95,25 @@ object SystemMessages {
 
     const val startAgain = "Начать заново?"
 
+    const val createQuizFail = "Не удалось создать викторину, Попробуйте еще раз."
+
+    const val quizResetted = "Викторина сброшена"
+
+    const val quizNotFound = "Викторина не найдена."
+
+    // ----------- quiz words ------------
+
+    const val allWordsAnswered = "Вы ответили на все слова!"
+
+    const val wordsNotFound = "Слова не найдены!"
+
+    const val wordNotFound = "Слово не найдено!"
+
+    const val setAnswerFail = "Неудалось зарегистрировать ответ."
+
     fun languageChooseMessage(languageName: String): String = "Вы выбрали $languageName язык."
 
-    fun categoryChooseMessage(categoryName: String): String = "Вы выбрали $categoryName категорию."
+    fun categoryChooseMessage(categoryName: String): String = "Вы выбрали категорию: $categoryName."
 
     fun nextTestNotifyMessage(timeInMillis: Long): String {
         val min = timeInMillis / 1000 / 60
