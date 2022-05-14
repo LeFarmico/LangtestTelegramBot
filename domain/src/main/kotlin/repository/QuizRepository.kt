@@ -13,4 +13,6 @@ interface QuizRepository {
     suspend fun setAnswerForQuizWord(chatId: Long, wordId: Long, answer: Boolean): DataState<QuizWordStats>
 
     suspend fun resetQuiz(chatId: Long): Boolean
+
+    suspend fun resetQuizWordNumber(chatId: Long): Boolean
 }

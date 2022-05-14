@@ -4,7 +4,7 @@ import bot.handler.IHandlerReceiver
 import command.Command
 import data.IRequestData
 import data.ResponseFactory
-import res.SystemMessages
+import res.TextResources
 
 class DefaultController(
     override val responseReceiver: IHandlerReceiver
@@ -14,7 +14,7 @@ class DefaultController(
         when (requestData.command) {
             Command.HelpCommand -> {
                 val response = ResponseFactory.builder(requestData.chatId)
-                    .message(SystemMessages.helpMsg)
+                    .message(TextResources.helpMsg)
                     .build()
                 responseReceiver.receiveData(response)
             }

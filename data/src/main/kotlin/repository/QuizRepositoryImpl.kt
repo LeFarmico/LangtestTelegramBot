@@ -45,4 +45,10 @@ class QuizRepositoryImpl(
         val response = langTestApi.resetQuiz(chatId).execute()
         return response.code() == 200
     }
+
+    override suspend fun resetQuizWordNumber(chatId: Long): Boolean {
+        val callback = langTestApi.resetQuizWordNumber(chatId)
+        val response = callback.execute()
+        return response.code() == 200
+    }
 }

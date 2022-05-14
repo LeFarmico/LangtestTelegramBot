@@ -4,7 +4,7 @@ import command.Command
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 
 class TestMessageBuilder(
-    private val chatId: Long,
+    chatId: Long,
     private val wordId: Long
 ) {
     
@@ -13,7 +13,7 @@ class TestMessageBuilder(
     private var buttonBuilder = ButtonBuilder.setUp()
 
     fun setQuizText(text: String, wordToTranslate: String): TestMessageBuilder {
-        message.setText("$text: $wordToTranslate")
+        message.setText("$text $wordToTranslate")
         return this
     }
 
@@ -35,7 +35,7 @@ class TestMessageBuilder(
     }
 
     fun build(): SendMessage {
-        val buttons = buttonBuilder.build(shuffled = true)
+        val buttons = buttonBuilder.build(shuffled = true, isVertical = true)
         return message.setButtons(buttons)
             .build()
     }

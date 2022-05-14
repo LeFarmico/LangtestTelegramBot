@@ -16,10 +16,10 @@ dependencies {
     implementation("io.insert-koin:koin-core:3.1.6")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     testImplementation(kotlin("test"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
 
     // Telegram bot api
-    implementation("org.telegram:telegrambotsextensions:5.7.1")
+    implementation("org.telegram:telegrambotsextensions:6.0.1")
 
     // Gson
     implementation("com.google.code.gson:gson:2.9.0")
