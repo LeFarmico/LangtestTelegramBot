@@ -17,7 +17,7 @@ data class QuizData(
     val currentWordNumber: Int = 0,
 
     @SerializedName("breakTimeInMillis")
-    val breakTimeInMillis: Long = 10_000,
+    val breakTimeInMillis: Long = 7_200_000,
 
     @SerializedName("languageId")
     val languageId: Long,

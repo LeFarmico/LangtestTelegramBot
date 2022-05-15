@@ -282,15 +282,12 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
         }
     }
 
-    override suspend fun answerToQuizQuestion(
+    override suspend fun correctAnswerToQuizQuestion(
         chatId: Long,
         messageId: Int,
-        wordId: Long,
-        answer: Boolean,
-        wordOriginal: String,
-        wordPressed: String
+        wordId: Long
     ) {
-        when (val answerData = quizRepository.setAnswerForQuizWord(chatId, wordId, answer)) {
+        when (val answerData = quizRepository.setCorrectAnswerForQuizWord(chatId, wordId)) {
             DataState.Empty -> {
                 NotFound(chatId, messageId, TextResources.wordNotFound)
             }
@@ -298,13 +295,15 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
                 ErrorState(chatId, messageId, answerData.exception, TextResources.setAnswerFail)
             }
             is DataState.Success -> {
+                val originalWord = answerData.data.originalWord
+                val translation = answerData.data.translation
                 if (answerData.data.nextQuizTime == null) {
-                    handleAnswerState(answer, chatId, messageId, wordOriginal, wordPressed)
+                    handleCorrectAnswerState(chatId, messageId, originalWord, translation)
                     getNextQuizWord(chatId, messageId)
                 } else {
-                    handleAnswerState(answer, chatId, messageId, wordOriginal, wordPressed)
-
                     val nextQuizTimeDelay = answerData.data.nextQuizTime!! - System.currentTimeMillis()
+
+                    handleCorrectAnswerState(chatId, messageId, originalWord, translation)
                     scheduleNextQuiz(chatId, messageId, nextQuizTimeDelay)
                     quizRepository.resetQuizWordNumber(chatId)
 
@@ -315,15 +314,31 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
         }
     }
 
-    private fun handleAnswerState(
-        answer: Boolean,
+    override suspend fun incorrectAnswerToQuizQuestion(chatId: Long, messageId: Int, wordId: Long) {
+        when (val answerData = quizRepository.setIncorrectAnswerForQuizWord(chatId, wordId)) {
+            DataState.Empty -> {
+                NotFound(chatId, messageId, TextResources.wordNotFound)
+            }
+            is DataState.Failure -> {
+                ErrorState(chatId, messageId, answerData.exception, TextResources.setAnswerFail)
+            }
+            is DataState.Success -> {
+                val quizWord = answerData.data
+                val quizState = QuizAnswered(chatId, messageId, TextResources.wrongAnswer)
+                val state = NextQuizWord(chatId, messageId, quizWord)
+                handler.handleState(quizState, chatId, messageId)
+                handler.handleState(state, chatId, messageId)
+            }
+        }
+    }
+
+    private fun handleCorrectAnswerState(
         chatId: Long,
         messageId: Int,
         wordOriginal: String,
-        wordPressed: String
+        translation: String
     ) {
-        val answerText = if (answer) { TextResources.rightAnswer } else { TextResources.wrongAnswer }
-        val message = "$answerText: $wordOriginal -> $wordPressed"
+        val message = "${TextResources.rightAnswer}: $wordOriginal -> $translation"
         val state = QuizAnswered(chatId, messageId, message)
         handler.handleState(state, chatId, messageId)
     }

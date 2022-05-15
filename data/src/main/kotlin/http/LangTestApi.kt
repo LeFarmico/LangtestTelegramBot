@@ -71,12 +71,17 @@ interface LangTestApi {
     @POST("api/quiz/{chat_id}/createQuizWords")
     fun createQuizWords(@Path("chat_id") chatId: Long): Call<List<QuizWord>>
 
-    @PUT("api/quiz/{chat_id}/quiz_word/{quiz_word_id}")
-    fun setAnswerForQuizWord(
+    @PUT("api/quiz/{chat_id}/quiz_word/{quiz_word_id}/correct")
+    fun setCorrectAnswerForQuizWord(
         @Path("chat_id") chatId: Long,
-        @Path("quiz_word_id") wordId: Long,
-        @Query("answer") answer: Boolean
+        @Path("quiz_word_id") wordId: Long
     ): Call<QuizWordStats>
+
+    @PUT("api/quiz/{chat_id}/quiz_word/{quiz_word_id}/incorrect")
+    fun setIncorrectAnswerForQuizWord(
+        @Path("chat_id") chatId: Long,
+        @Path("quiz_word_id") wordId: Long
+    ): Call<QuizWord>
 
     @PUT("api/quiz/{chat_id}/resetQuiz")
     fun resetQuiz(@Path("chat_id") chatId: Long): Call<String>

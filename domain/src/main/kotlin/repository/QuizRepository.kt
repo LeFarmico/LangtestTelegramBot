@@ -10,7 +10,9 @@ interface QuizRepository {
 
     suspend fun createQuizWords(chatId: Long): Boolean
 
-    suspend fun setAnswerForQuizWord(chatId: Long, wordId: Long, answer: Boolean): DataState<QuizWordStats>
+    suspend fun setCorrectAnswerForQuizWord(chatId: Long, wordId: Long): DataState<QuizWordStats>
+
+    suspend fun setIncorrectAnswerForQuizWord(chatId: Long, wordId: Long): DataState<QuizWord>
 
     suspend fun resetQuiz(chatId: Long): Boolean
 
