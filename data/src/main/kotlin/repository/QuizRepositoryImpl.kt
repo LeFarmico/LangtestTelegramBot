@@ -28,9 +28,22 @@ class QuizRepositoryImpl(
         return response.code() == 200
     }
 
-    override suspend fun setAnswerForQuizWord(chatId: Long, wordId: Long, answer: Boolean): DataState<QuizWordStats> {
+    override suspend fun setCorrectAnswerForQuizWord(chatId: Long, wordId: Long): DataState<QuizWordStats> {
         return try {
-            val response = langTestApi.setAnswerForQuizWord(chatId, wordId, answer).execute()
+            val response = langTestApi.setCorrectAnswerForQuizWord(chatId, wordId).execute()
+            if (response.body() == null) {
+                DataState.Empty
+            } else {
+                DataState.Success(response.body()!!)
+            }
+        } catch (e: Exception) {
+            DataState.Failure(e)
+        }
+    }
+
+    override suspend fun setIncorrectAnswerForQuizWord(chatId: Long, wordId: Long): DataState<QuizWord> {
+        return try {
+            val response = langTestApi.setIncorrectAnswerForQuizWord(chatId, wordId).execute()
             if (response.body() == null) {
                 DataState.Empty
             } else {

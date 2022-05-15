@@ -23,23 +23,17 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
             val messageId = requestData.messageId
             when (val command = requestData.command) {
                 is Command.CorrectAnswerCallback -> {
-                    langTestIntent.answerToQuizQuestion(
+                    langTestIntent.correctAnswerToQuizQuestion(
                         chatId,
                         messageId,
-                        command.wordId,
-                        true,
-                        command.wordOriginal,
-                        command.translation
+                        command.quizWordId
                     )
                 }
                 is Command.IncorrectAnswerCallback -> {
-                    langTestIntent.answerToQuizQuestion(
+                    langTestIntent.incorrectAnswerToQuizQuestion(
                         chatId,
                         messageId,
-                        command.wordId,
-                        false,
-                        command.wordOriginal,
-                        command.wrongTranslation
+                        command.quizWordId
                     )
                 }
                 is Command.StartQuizCallback -> {
@@ -201,7 +195,7 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
                 responseReceiver.receiveData(response)
             }
             is NextQuizWord -> {
-                val message = TestMessageBuilder.setChatId(chatId, state.quizWord.id, state.quizWord.originalWord)
+                val message = TestMessageBuilder.setChatId(chatId, state.quizWord.id)
                     .setQuizText(TextResources.quizText, state.quizWord.originalWord)
                     .addIncorrectButtonList(state.quizWord.wrongTranslations)
                     .addCorrectButton(state.quizWord.correctTranslation)

@@ -73,7 +73,7 @@ object TextResources {
 
     const val rightAnswer = "Верный ответ"
 
-    const val wrongAnswer = "Неверный ответ"
+    const val wrongAnswer = "Неверный ответ, поробуйте еще раз."
 
     const val yes = "Да"
 

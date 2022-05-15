@@ -16,8 +16,8 @@ sealed class Command {
                 StartQuizCallback.COMMAND -> StartQuizCallback(commandData.toBoolean())
                 SetLanguageCallBack.COMMAND -> SetLanguageCallBack(commandData.toLong())
                 SetCategoryCallback.COMMAND -> SetCategoryCallback(commandData.toLong())
-                CorrectAnswerCallback.COMMAND -> CorrectAnswerCallback.parseCallback(commandData)
-                IncorrectAnswerCallback.COMMAND -> IncorrectAnswerCallback.parseCallback(commandData)
+                CorrectAnswerCallback.COMMAND -> CorrectAnswerCallback(commandData.toLong())
+                IncorrectAnswerCallback.COMMAND -> IncorrectAnswerCallback(commandData.toLong())
                 SetLanguageCommand.COMMAND -> SetLanguageCommand
                 GetQuizTest.COMMAND -> GetQuizTest
 
@@ -89,51 +89,21 @@ sealed class Command {
     }
 
     data class CorrectAnswerCallback(
-        val wordId: Long,
-        val wordOriginal: String,
-        val translation: String
+        val quizWordId: Long,
     ) : Command() {
 
         companion object {
-            const val COMMAND = "correctlangtestanswer"
-            fun buildCallBackQuery(
-                wordId: Long,
-                wordOriginal: String,
-                translation: String
-            ): String = "$COMMAND ${wordId}_${wordOriginal}_$translation"
-
-            fun parseCallback(callback: String): CorrectAnswerCallback {
-                val parameterList = callback.split("_")
-                return CorrectAnswerCallback(
-                    parameterList[0].toLong(),
-                    parameterList[1],
-                    parameterList[2]
-                )
-            }
+            const val COMMAND = "corans"
+            fun buildCallBackQuery(quizWordId: Long): String = "$COMMAND $quizWordId"
         }
     }
 
     data class IncorrectAnswerCallback(
-        val wordId: Long,
-        val wordOriginal: String,
-        val wrongTranslation: String
+        val quizWordId: Long
     ) : Command() {
         companion object {
-            const val COMMAND = "incorrectlangtestanswer"
-            fun buildCallBackQuery(
-                wordId: Long,
-                wordOriginal: String,
-                wrongTranslation: String
-            ): String = "$COMMAND ${wordId}_${wordOriginal}_$wrongTranslation"
-
-            fun parseCallback(callback: String): IncorrectAnswerCallback {
-                val parameterList = callback.split("_")
-                return IncorrectAnswerCallback(
-                    parameterList[0].toLong(),
-                    parameterList[1],
-                    parameterList[2]
-                )
-            }
+            const val COMMAND = "incorans"
+            fun buildCallBackQuery(wordId: Long): String = "$COMMAND $wordId"
         }
     }
 //    data class AskExamCallback(val start: Boolean) : Command() {
