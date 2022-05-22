@@ -101,6 +101,8 @@ object TextResources {
 
     const val quizNotFound = "Викторина не найдена."
 
+    const val quizNotification = "Чтобы начать викторину нажмите /start"
+
     // ----------- quiz words ------------
 
     const val allWordsAnswered = "Вы ответили на все слова!"

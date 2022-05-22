@@ -6,7 +6,7 @@ import res.Resources
 
 class TokenInterceptor : Interceptor {
 
-    private val token get() = Resources.token
+    private val token get() = Resources.TOKEN
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val original = chain.request()

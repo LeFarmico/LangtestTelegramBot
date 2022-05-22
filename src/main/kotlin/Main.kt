@@ -3,6 +3,7 @@ import di.AppDi
 import di.DataDI
 import entity.UserData
 import http.LangTestApi
+import io.github.cdimascio.dotenv.Dotenv
 import kotlinx.coroutines.*
 import org.koin.core.context.startKoin
 import org.koin.java.KoinJavaComponent.inject
@@ -14,6 +15,10 @@ import res.Resources
 fun main() {
     val log = LoggerFactory.getLogger("main function")
     val bot = Bot(Params.botName, Params.token)
+    Dotenv.configure().load().apply {
+        Resources.HOST = get("SPRING_DOCKER_HOST")
+        Resources.PORT = get("SPRING_LOCAL_PORT")
+    }
     startKoin { modules(listOf(AppDi.module, DataDI.dataModule)) }
     val retrofitService: LangTestApi by inject(LangTestApi::class.java)
     
@@ -46,7 +51,7 @@ suspend fun login(retrofitService: LangTestApi) {
         val response = retrofitService.login(UserData(PrivateData.login, PrivateData.password)).execute()
         if (response.body() != null) {
             val token = response.body()
-            Resources.token = "Bearer " + token!!.jwtToken
+            Resources.TOKEN = "Bearer " + token!!.jwtToken
         } else {
             throw RuntimeException("Login failure")
         }

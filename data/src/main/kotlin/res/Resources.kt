@@ -2,7 +2,7 @@ package res
 
 object Resources {
 
-    const val BASE_URL = "http://localhost:50001/"
-    
-    var token: String = ""
+    lateinit var HOST: String
+    var TOKEN: String = ""
+    lateinit var PORT: String
 }
