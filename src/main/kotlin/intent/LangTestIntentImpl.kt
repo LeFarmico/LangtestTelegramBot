@@ -259,7 +259,7 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
                 }
             }
         } else {
-            val state = NotFound(chatId, messageId, TextResources.startQuizFail)
+            val state = QuizStopped(chatId, messageId, TextResources.quizNotification)
             handler.handleState(state, chatId, messageId)
         }
     }

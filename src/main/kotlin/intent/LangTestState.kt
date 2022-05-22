@@ -56,5 +56,7 @@ data class QuizRestarted(val chatId: Long, val messageId: Int, val message: Stri
 
 data class QuizWordPressed(val chatId: Long, val messageId: Int, val message: String) : LangTestState()
 
+data class QuizStopped(val chatId: Long, val messageId: Int, val message: String) : LangTestState()
+
 // Data
 data class NextQuizTime(val chatId: Long, val messageId: Int, val nextQuizTimeText: String) : LangTestState()

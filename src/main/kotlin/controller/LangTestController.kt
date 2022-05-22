@@ -262,6 +262,13 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
                     .build()
                 responseReceiver.receiveData(response)
             }
+            is QuizStopped -> {
+                val response = ResponseFactory.builder(chatId)
+                    .editCurrent(state.messageId)
+                    .message(state.message)
+                    .build()
+                responseReceiver.receiveData(response)
+            }
         }
     }
 }

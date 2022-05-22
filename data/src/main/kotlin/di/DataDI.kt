@@ -8,6 +8,7 @@ import org.koin.dsl.module
 import res.Resources
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import utils.httpBuilder
 import java.util.concurrent.TimeUnit
 
 object DataDI {
@@ -26,7 +27,7 @@ object DataDI {
         }
         single<Retrofit> {
             Retrofit.Builder()
-                .baseUrl(Resources.BASE_URL)
+                .baseUrl(httpBuilder(Resources.HOST, Resources.PORT))
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(get())
                 .build()

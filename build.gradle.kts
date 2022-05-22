@@ -2,12 +2,13 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.5.10"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
     application
 }
 
 group = "me.flyin"
-version = "1.0-SNAPSHOT"
 
+version = "1.0-SNAPSHOT"
 repositories {
     mavenCentral()
 }
@@ -28,6 +29,7 @@ dependencies {
     annotationProcessor("org.apache.logging.log4j:log4j-core:2.17.1")
     implementation("org.apache.logging.log4j:log4j-api-kotlin:1.1.0")
     implementation("org.slf4j:slf4j-simple:1.7.35")
+    implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")
 
     // Deps
     implementation(project(":domain"))
@@ -44,4 +46,16 @@ tasks.withType<KotlinCompile> {
 
 application {
     mainClass.set("MainKt")
+}
+
+tasks.jar {
+    manifest {
+        attributes(
+            mapOf(
+                "Implementation-Title" to project.name,
+                "Implementation-Version" to project.version,
+                "Main-Class" to application.mainClass,
+            )
+        )
+    }
 }
