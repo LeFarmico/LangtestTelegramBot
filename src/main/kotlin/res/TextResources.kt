@@ -39,6 +39,12 @@ object TextResources {
 
     const val updateDataFail = "Не удалось обновить данные"
 
+    const val selectBreakTime = "Выберите время перерыва между тестами"
+
+    const val breakTimeQuizNotification = "Викторина будет повторятся раз в "
+
+    const val setBreakTimeFail = "Не удалось изменить время."
+
     // ----------- lang ---------
 
     const val langNotFound = "Язык не найден"

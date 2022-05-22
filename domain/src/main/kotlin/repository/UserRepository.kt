@@ -9,8 +9,8 @@ interface UserRepository {
         chatId: Long,
         languageId: Long,
         categoryId: Long,
-        nextQuizTime: Long = 10000,
-        wordsInTest: Int = 5
+        nextQuizTime: Long,
+        wordsInTest: Int
     ): DataState<QuizData>
 
     suspend fun deleteUserChatId(chatId: Long): Boolean

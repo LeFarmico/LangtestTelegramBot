@@ -66,6 +66,12 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
                 Command.RestartQuiz -> {
                     langTestIntent.restartQuizWords(chatId, messageId)
                 }
+                Command.SetBreakTimeCommand -> {
+                    langTestIntent.getBreakTimeList(chatId, messageId)
+                }
+                is Command.SetBreakTimeCallback -> {
+                    langTestIntent.selectBreakTime(chatId, messageId, command.breakTime)
+                }
                 else -> {}
             }
         }
@@ -263,6 +269,37 @@ class LangTestController(override val responseReceiver: IHandlerReceiver) : ICon
                 responseReceiver.receiveData(response)
             }
             is QuizStopped -> {
+                val response = ResponseFactory.builder(chatId)
+                    .editCurrent(state.messageId)
+                    .message(state.message)
+                    .build()
+                responseReceiver.receiveData(response)
+            }
+            is AskBreakTime -> {
+                val response = ResponseFactory.builder(chatId)
+                    .message(state.message)
+                    .setButtons {
+                        val buttonList = mutableListOf<InlineKeyboardButton>()
+                        state.timeList.forEach { (millis, text) ->
+                            buttonList.add(
+                                InlineKeyboardButton().apply {
+                                    this.text = text
+                                    this.callbackData = Command.SetBreakTimeCallback.buildCallBackQuery(millis)
+                                }
+                            )
+                        }
+                        buttonList
+                    }.build()
+                responseReceiver.receiveData(response)
+            }
+            is BreakTimeSelected -> {
+                val response = ResponseFactory.builder(chatId)
+                    .editCurrent(state.messageId)
+                    .message(state.message)
+                    .build()
+                responseReceiver.receiveData(response)
+            }
+            is SetBreakTimeFailed -> {
                 val response = ResponseFactory.builder(chatId)
                     .editCurrent(state.messageId)
                     .message(state.message)

@@ -11,6 +11,7 @@ sealed class Command {
                 GetUserData.COMMAND -> GetUserData
                 ResetQuiz.COMMAND -> ResetQuiz
                 RestartQuiz.COMMAND -> RestartQuiz
+                SetBreakTimeCommand.COMMAND -> SetBreakTimeCommand
 
                 TimeToNextTestCommand.COMMAND -> TimeToNextTestCommand
                 StartQuizCallback.COMMAND -> StartQuizCallback(commandData.toBoolean())
@@ -20,6 +21,7 @@ sealed class Command {
                 IncorrectAnswerCallback.COMMAND -> IncorrectAnswerCallback(commandData.toLong())
                 SetLanguageCommand.COMMAND -> SetLanguageCommand
                 GetQuizTest.COMMAND -> GetQuizTest
+                SetBreakTimeCallback.COMMAND -> SetBreakTimeCallback(commandData.toLong())
 
                 else -> None
             }
@@ -53,6 +55,10 @@ sealed class Command {
 
     object ResetQuiz : Command() {
         const val COMMAND = "resetquiz"
+    }
+
+    object SetBreakTimeCommand : Command() {
+        const val COMMAND = "setnewbreaktime"
     }
 
     object GetQuizTest : Command() {
@@ -104,6 +110,15 @@ sealed class Command {
         companion object {
             const val COMMAND = "incorans"
             fun buildCallBackQuery(wordId: Long): String = "$COMMAND $wordId"
+        }
+    }
+
+    data class SetBreakTimeCallback(
+        val breakTime: Long
+    ) : Command() {
+        companion object {
+            const val COMMAND = "setbreaktime"
+            fun buildCallBackQuery(breakTime: Long): String = "$COMMAND $breakTime"
         }
     }
 //    data class AskExamCallback(val start: Boolean) : Command() {

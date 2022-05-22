@@ -61,7 +61,7 @@ class UserRepositoryImpl(
 
     override suspend fun setBreakTimeByChatId(chatId: Long, timeInMillis: Long): Boolean {
         return try {
-            val response = langTestApi.updateQuizData(
+            val response = langTestApi.updateBreakTimeQuizData(
                 chatId = chatId,
                 breakTimeInMillis = timeInMillis
             ).execute()

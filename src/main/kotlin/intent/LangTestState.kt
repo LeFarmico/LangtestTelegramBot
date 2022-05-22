@@ -60,3 +60,9 @@ data class QuizStopped(val chatId: Long, val messageId: Int, val message: String
 
 // Data
 data class NextQuizTime(val chatId: Long, val messageId: Int, val nextQuizTimeText: String) : LangTestState()
+
+data class AskBreakTime(val chatId: Long, val messageId: Int, val message: String, val timeList: Map<Long, String>) : LangTestState()
+
+data class BreakTimeSelected(val chatId: Long, val messageId: Int, val message: String) : LangTestState()
+
+data class SetBreakTimeFailed(val chatId: Long, val messageId: Int, val message: String) : LangTestState()

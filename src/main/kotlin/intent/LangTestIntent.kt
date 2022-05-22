@@ -59,4 +59,8 @@ interface LangTestIntent {
 
     // ---------- data --------
     suspend fun timeToNextQuiz(chatId: Long, messageId: Int)
+
+    suspend fun getBreakTimeList(chatId: Long, messageId: Int)
+
+    suspend fun selectBreakTime(chatId: Long, messageId: Int, breakTimeInMillis: Long)
 }

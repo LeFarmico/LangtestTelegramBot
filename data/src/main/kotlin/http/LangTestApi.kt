@@ -45,6 +45,13 @@ interface LangTestApi {
     ): Call<QuizData>
 
     // +
+    @PUT("api/quiz/{chat_id}/update")
+    fun updateBreakTimeQuizData(
+        @Path("chat_id") chatId: Long,
+        @Query("break_time_in_millis") breakTimeInMillis: Long? = null,
+    ): Call<QuizData>
+
+    // +
     @DELETE("api/quiz/{chat_id}/delete")
     fun deleteQuizData(@Path("chat_id") chatId: Long): Call<String>
 

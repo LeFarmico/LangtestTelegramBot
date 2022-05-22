@@ -1,6 +1,7 @@
 package intent
 
 import controller.IStateHandler
+import dataSource.BreakTimeDataSource
 import entity.QuizData
 import entity.QuizViewData
 import kotlinx.coroutines.CoroutineScope
@@ -93,7 +94,7 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
     }
 
     override suspend fun finishRegistration(chatId: Long, messageId: Int, languageId: Long, categoryId: Long) {
-        when (val quizDataState = userRepo.addUser(chatId, languageId, categoryId)) {
+        when (val quizDataState = userRepo.addUser(chatId, languageId, categoryId, 7_200_000, 5)) {
             DataState.Empty -> {
                 val state = NotFound(chatId, messageId, TextResources.userNotRegistered)
                 handler.handleState(state, chatId, messageId)
@@ -391,6 +392,38 @@ class LangTestIntentImpl(private val handler: IStateHandler) : LangTestIntent {
     override suspend fun timeToNextQuiz(chatId: Long, messageId: Int) {
         val state = NotFound(chatId, messageId, "Not implemented yet")
         handler.handleState(state, chatId, messageId)
+    }
+
+    override suspend fun getBreakTimeList(chatId: Long, messageId: Int) {
+        when (userRepo.getUserByChatId(chatId)) {
+            DataState.Empty -> {
+                val state = NotFound(chatId, messageId, TextResources.userNotFound)
+                handler.handleState(state, chatId, messageId)
+            }
+            is DataState.Failure -> {
+                val state = NotFound(chatId, messageId, TextResources.getUserDataFail)
+                handler.handleState(state, chatId, messageId)
+            }
+            is DataState.Success -> {
+                val state = AskBreakTime(chatId, messageId, TextResources.selectBreakTime, BreakTimeDataSource.breakTimeList)
+                handler.handleState(state, chatId, messageId)
+            }
+        }
+    }
+
+    override suspend fun selectBreakTime(chatId: Long, messageId: Int, breakTimeInMillis: Long) {
+        when (userRepo.setBreakTimeByChatId(chatId, breakTimeInMillis)) {
+            true -> {
+                val timeString = BreakTimeDataSource.breakTimeList[breakTimeInMillis]
+                val notifString = TextResources.breakTimeQuizNotification
+                val state = BreakTimeSelected(chatId, messageId, notifString + timeString)
+                handler.handleState(state, chatId, messageId)
+            }
+            false -> {
+                val state = SetBreakTimeFailed(chatId, messageId, TextResources.setBreakTimeFail)
+                handler.handleState(state, chatId, messageId)
+            }
+        }
     }
 
     private suspend fun getQuizViewData(quizData: QuizData): QuizViewData {
